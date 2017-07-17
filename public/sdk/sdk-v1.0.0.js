@@ -1,0 +1,949 @@
+'use strict'
+
+var optimoveSDK = function(){
+    var _version = "1.0.0";
+    var _sdkDomain = "https://optimove-web-sdk.firebaseapp.com/";
+    var _configuration;
+    var _userId;
+    var _userEmail;
+
+    var logger = function(){
+        var _levels = {"info" : 1, "error" : 2, "none" : 3}
+        var _loggerLevel = "none" //  "none" | "info" | "error"
+
+        var _setLogLevel = function (logLevel) {
+            _loggerLevel = logLevel;
+        }
+
+        var _log = function(level, message) {
+            if (_levels[level] >= _levels[_loggerLevel]) {
+                console.log(message)
+            }
+        }
+
+        return {
+            setLevel: _setLogLevel,
+            log : _log
+        }
+    }()
+
+    var init = function(token, confversion, callback, logLevel){
+        if(logLevel){
+            logger.setLevel(logLevel);
+        }
+        //load script
+        var configurationURL = _sdkDomain + token + "/" + confversion+".js";
+        loadScript(configurationURL, function () {
+            logger.log("info", "configuration loaded successfully");
+            setConfiguration(callback);
+        })
+    }
+
+    var setConfiguration = function(callback){
+        _configuration = optimoveTenantConfiguration;
+        // check if Optitrack enabled
+        if(_configuration.enableOptitrack){
+            optitrackModule.initializeOptiTrack(logger, _configuration, callback);
+        }else {
+            callback(true);
+        }
+
+        if(_configuration.enableGDN){
+            // load optitrack
+        }
+    }
+
+    var loadScript = function(url, callback){
+        var script = document.createElement("script");
+        script.type = "text/javascript";
+        if (script.readyState){  //IE
+            script.onreadystatechange = function(){
+                if (script.readyState == "loaded" ||
+                    script.readyState == "complete"){
+                    script.onreadystatechange = null;
+                    callback();
+                }
+            };
+        } else {
+            script.onload = function(){
+                callback();
+            };
+        }
+
+        script.src = url;
+        document.getElementsByTagName("head")[0].appendChild(script);
+    }
+
+    var validateEvent = function(eventName, parameters){
+        var validEvent = {};
+
+        if(!_configuration.events[eventName]){
+            return false;
+        }else{
+            validEvent.id = _configuration.events[eventName].id;
+            if(parameters["userId"]){
+                validEvent.userId = parameters["userId"];
+            }else if(_configuration.enableOptitrack){
+                // check if optitrackenabled and if check if setUserId was called
+
+                // check optitrack visitorId and session number
+
+            }else{
+                logger.log("info", "parameter userId is required")
+                return false;
+            }
+
+            validEvent["eventName"] = eventName;
+            validEvent["eventMetadata"]= _configuration.events[eventName];
+            validEvent["parameters"] = {};
+            var event = _configuration.events[eventName];
+            for(var parameterName in event.parameters ){
+                var paramMetadata = event.parameters[parameterName];
+                if(paramMetadata.required && !parameters[parameterName]){
+                    logger.log("info", "required paramMetadata '"+ parameterName +"' is missing");
+                    return false;
+                }else{
+                    if(paramMetadata.type == "String" && typeof(parameters[parameterName]) != "string" ){
+                        logger.log("info", "parameter '"+ parameterName +"' should be type of String")
+                        return false;
+                    }else if(paramMetadata.type == "Number" && typeof(parameters[parameterName]) != "number" ){
+                        logger.log("info", "parameter '"+ parameterName +"' should be type of number")
+                        return false
+                    }
+                }
+
+                validEvent["parameters"][parameterName] = { value : parameters[parameterName] , metadata : paramMetadata}
+            }
+        }
+
+        return validEvent;
+    }
+
+    var realTimeModule = function(){
+        var jsonpAsyncCall = function (event, data, callback) {
+            var createGuid = function () {
+                function generateRand() {
+                    return (((1 + Math.random()) * 0x10000) | 0).toString(16).substring(1);
+                }
+
+                var guid = (generateRand() + generateRand() + generateRand() + generateRand()).toLowerCase();
+                return guid;
+            }
+
+            try {
+                var paramsString = objToParams(data);
+                var url = _configuration.realtimeGateway + event + "?" + paramsString;
+                var callbackName = 'optiReal_callback_' + createGuid();
+                window[callbackName] = function (data) {
+                    delete window[callbackName];
+                    document.head.removeChild(script);
+                    callback(data);
+                };
+
+                var script = document.createElement('script');
+                script.src = url + (url.indexOf('?') >= 0 ? '&' : '?') + 'callback=' + callbackName;
+                document.head.appendChild(script);
+            }
+            catch (e) {
+                logger.log("error","Fail to parse request (jsonp)");
+            }
+        }
+
+        var objToParams = function (obj) {
+            var paramString = '';
+            for (var key in obj) {
+                var value = obj[key];
+                if (obj[key] instanceof Array) {
+                    value = encodeURIComponent(JSON.stringify(value));
+                }
+
+                if (paramString != "") paramString += "&";
+                paramString += key + "=" + encodeURIComponent(value);
+            }
+
+            return paramString;
+        }
+
+        var handleJsonpResponse = function (response) {
+            try {
+                if (_configuration.options.popupCallBack) {
+                    _configuration.options.popupCallBack(response);
+                }
+                else{
+                    if (response.IsSuccess && response.Data != '') {
+                        var popupDiv = document.createElement('div');
+                        var divHtml = "";
+                        var opacity = _configuration.options.showDimmer ? 0.5 : 0;
+                        divHtml = "<div id='optiRealPopupDimmer' style='position: fixed;bottom: 0;right: 0;top: 0;left: 0;overflow: hidden;display: none; z-index:999999999;background: #000000;opacity : " + opacity + ";display:block;width: auto;height: auto;'></div>";
+                        document.addEventListener("mousedown", OptiRealApi.closePopup);
+                        var poweredByHtml = "<div style='position: absolute;z-index:9999999999; clear:both;font-family : Arial;font-size : 9px;color : #CCCCCC;padding-top:6px;margin-left: 5px;'>Powered by Optimove</div>";
+                        divHtml += "<div style='max-height:90%;max-width:90%;top: 50%;left: 50%;transform:translate(-50%, -50%);position: fixed;z-index:9999999999;'><div style=' clear:both;min-width: 100px;min-height: 100px;background-color:white; text-align:center;box-shadow:0 0 5px 0 rgba(0, 0, 0, 0.2);'><div style='position:absolute;right:-13px;top:-13px;cursor:pointer;z-index:99999999999; color:white' onclick='OptiRealApi.closePopup();'><img id='optiRealclosePopupImage' src='https://d3qycynbsy5rsn.cloudfront.net/banner_pop_x.png' /></div><div style='border-style: solid;border-width: 5px;border-radius:5px; border-color:white;' >" + response.Data + "</div></div>"
+                            + (_configuration.options.showDimmer && _configuration.options.showWatermark ? poweredByHtml : "") + "</div>";
+                        popupDiv.innerHTML = divHtml;
+                        document.body.appendChild(popupDiv);
+                        //OptiRealApi.popup = popupDiv;
+                    }
+                }
+            }
+            catch (e) {
+                logger.log("error", "real time handle response error")
+
+            }
+        }
+
+        var _reportEvent = function (event) {
+            var params = {};
+            for(var eventParam in event.parameters){
+                params[eventParam] = event.parameters[eventParam].value;
+            }
+
+            jsonpAsyncCall("reportEvent_b", { tid : _configuration.realtimeToken,
+                    cid : event.userId,
+                    eid : event.id,
+                    vid : event.visitorData ? event.visitorData.visitorId : null,
+                    vcount : event.visitorData ? event.visitorData.visitCount : null,
+                    context : JSON.stringify(params)
+                },
+                function (response) {
+                    logger.log("error", "real time report event after call");
+                    handleJsonpResponse(response);
+                });
+        }
+
+        return {
+            reportEvent : _reportEvent
+        }
+
+    }()
+
+    var optitrackModule = function(){
+        var _userId 		= null;
+        var _ot_endpoint 	= null;
+        var _ot_tenantId 	= null;
+        var _piwikURL 		= null;
+        var _configURL  	= null;
+        var _tracker 		= null;
+        var _sdkConfig 		= null;
+        var _pageVisitCount = 0;
+        // ------------------------------ Event Const Values ------------------------------
+        var LogEventCategory_name = 'LogEvent';
+        var SetUserIdEvent_name = 'set_user_id_event';
+        var SetEmailEvent_name = 'Set_email_event';
+        var StitchUsersEvent_name = 'stitch_event';
+        var email_param_name = "email";
+        var originalVisitorId_param_name = "originalVisitorId";
+        var userId_param_name = "userId";
+        var updatedVisitorId_param_name = "updatedVisitorId"
+        // ------------------------------ SDK public member functions ------------------------------
+
+        // ---------------------------------------
+        // Function: initialize
+        // Args: logger - log object.
+        // callback_ready - callback when initialization finished successfuly
+        // Gets the Optimove SDK Verion
+        // ---------------------------------------
+        var initializeOptiTrack = function (logger, SDKConfig, callback_ready) {
+            _sdkConfig = SDKConfig;
+            _ot_endpoint = getOptiTrackEndpointFromConfig(SDKConfig)
+            _ot_tenantId = getOptiTrackTenantIdFromConfig(SDKConfig);
+            _piwikURL = buildPiwikResourceURL(SDKConfig);
+            var tracker  = loadOptiTrackJSResource(this, _piwikURL, callback_ready);
+          
+        };
+
+        // ---------------------------------------
+        // Function: setUserId
+        // Args: updatedUserId
+        // Log User Public Id
+        // ---------------------------------------
+        var setUserId = function (updatedUserId) {
+            setOptitrackUserId(this, updatedUserId);
+        }
+
+        // ---------------------------------------
+        // Function: logPageVisitEvent
+        // Args:
+        // Gets the Optimove SDK Verion
+        // ---------------------------------------
+        var logPageVisitEvent = function (customURL, pageTitle) {
+            logOptitrackPageVisit(this, customURL, pageTitle);
+        }
+
+        // ---------------------------------------
+        // Function: logUserEmail
+        // Args: email
+        // Log User email
+        // ---------------------------------------
+        var logUserEmail = function (email) {
+            this.logOptitrackUserEmail(this, email);
+        }
+
+        // ---------------------------------------
+        // Function: logEvent
+        // Args: eventId, eventParameters
+        // Log Custom Event
+        // ---------------------------------------
+        var logEvent = function (eventId, eventParameters) {
+            logOptitrackCustomEvent(this,eventId, eventParameters);
+        }
+
+        // ------------------------------ Optitrack Private member functions ------------------------------
+
+        
+        // ---------------------------------------
+        // Function: logOptitrackCustomEvent
+        // Args: category, action, name, value
+        // Sets the Event in Optitrack Infrastructure
+        // Flow: Go through the event configuration definition.
+        // Per each parameter we chech whether it exist and if so.
+        // What is the optiTrackDimensionId we should use for it in the custom Dimension.
+        // if the optiTrackDimensionId = -1 we define the parameter not to be delivered to the Optitrack.
+        // ---------------------------------------
+        var  logOptitrackCustomEvent = function (THIS, eventId, event_parameters) {
+            try{
+                if(event_parameters == undefined)
+                {
+                    return false;
+                }
+
+                cleanCustomDimensions(); // cleaning the previous usage
+                var numOfAddedParams = 0;
+                var eventConfig = _sdkConfig.events[eventId];
+                var parameterConfigsNames = Object.getOwnPropertyNames(eventConfig.parameters);
+                parameterConfigsNames.forEach(function (paramName) {
+                    var currParamConfig = eventConfig.parameters[paramName];
+                    // Check if the parameter is given in the Event Argumen
+                    if(event_parameters[paramName] != undefined && currParamConfig.optiTrackDimensionId > 0  )
+                    {
+                        var paramValue = event_parameters[paramName];
+                        if( paramValue != undefined)
+                        {
+                            numOfAddedParams++;
+                            _tracker.setCustomDimension(currParamConfig.optiTrackDimensionId, paramValue);
+                        }
+                    }
+                });
+
+                if(numOfAddedParams > 0 && typeof _tracker != 'undefined')
+                {
+
+                    var configEventId = eventConfig.id;
+                    var eventName = eventId;                                     
+                    _tracker.setCustomDimension(_sdkConfig.eventIdCustomDimensionId, configEventId);
+                    _tracker.setCustomDimension(_sdkConfig.eventNameCustomDimensionId, eventName);
+                    
+                    _tracker.trackEvent(LogEventCategory_name, eventId);
+                    return true;
+                }else{
+                    throw "_tracker is undefined !!";
+                }
+            }catch(error){
+                throw "logOptitrackCustomEvent Failed!!";
+            }
+
+        };
+
+        // ---------------------------------------
+        // Function: logOptitrackPageVisit
+        // Args: pageURL, pageTitle
+        // Send Optitrack Infrastructure with the Loading Page Event.
+        // ---------------------------------------
+        var logOptitrackPageVisit = function (THIS, pageURL, pageTitle) {
+            try{
+                var isValidURL = validatePageURL(pageURL);
+
+                if(_sdkConfig.isSPASite == true)
+                {
+                    _pageVisitCount++;
+                    if(_pageVisitCount > 1)
+                    {
+                        _tracker.setGenerationTimeMs(0);
+                    }
+                }
+
+                if(isValidURL == false)
+                {
+                    throw 'customURL-' + pageURL  + 'is not a valid URL';
+                }
+                _tracker.enableLinkTracking(true);
+                if(_sdkConfig.enableHeartBeatTimer == true )
+                {
+                    _tracker.enableHeartBeatTimer(_sdkConfig.heartBeatTimer);
+                }
+
+                _tracker.setCustomUrl(pageURL);
+                _tracker.trackPageView(pageTitle);
+                if(_sdkConfig.supportCookieMatcher == true)
+                {
+                    updateCookieMatcher(THIS, updatedUserId);
+                }
+
+                if(_sdkConfig.supportUserEmailStitch == true)
+                {
+                    processEmailStitch(THIS, customURL);
+                }
+            }catch(error){
+
+
+            }
+        };
+
+        // ---------------------------------------
+        // Function: processEmailStitch
+        // Args: pageURL
+        // Sets the email in Optitrack Infrastructure
+        // the Stitch will try to find th estitch data in
+        // both the URL supplied by the PageVisit event and the
+        // URL extracted from the window.location
+        // ---------------------------------------
+        var processEmailStitch = function (THIS, pageURL) {
+            // We might have not Load the Piwik Yet
+            try {
+                var stitchDataFound = false;
+                var stitchEvent = "stitchEvent"
+                var sourcePublicCustomerId = "sourcePublicCustomerId";
+                var sourceVisitorId = "sourceVisitorId";
+                var targetVsitorId = "targetVsitorId";
+                var stitchData = {}
+                var eventConfig = getCustomEventConfigById(StitchUsersEvent_name);
+                var sourcePCIDParamConfig = null;
+                var sourceVisitorIdParamConfig = null;
+                var targetVsitorIdIdParamConfig = null;
+                if(eventConfig != null)
+                {
+                    sourcePCIDParamConfig = getCustomEventParamFromConfig(eventConfig, sourcePublicCustomerId);
+                    sourceVisitorIdParamConfig = getCustomEventParamFromConfig(eventConfig, sourceVisitorId);
+                    targetVsitorIdIdParamConfig = getCustomEventParamFromConfig(eventConfig, targetVsitorId);
+                }
+
+                var pageStitchData = getOptimoveStitchData(pageURL);
+                if(pageStitchData.OptimoveStitchDataExist == false)
+                {
+                    var browserURL = window.location.pathname;
+                    var browserStitchData = getOptimoveStitchData(browserURL);
+                    if(browserStitchData.OptimoveStitchDataExist == true)
+                    {
+                        stitchData  = browserStitchData;
+                        stitchDataFound = true;
+                    }
+                }else{
+                    stitchData  = pageStitchData;
+                    stitchDataFound = true;
+                }
+
+                if (stitchData == true && typeof _tracker != 'undefined')
+                {
+                    cleanCustomDimensions(); // cleaning the previous usage
+                    var numOfParams = 0;
+                    var targetVisitorId = _tracker.getVisitorId();
+                    if(stitchData.OptimovePublicCustomerId != null)
+                    {
+                        if(sourcePCIDParamConfig.optiTrackDimensionId > 0){
+                            numOfParams++;
+                            _tracker.setCustomDimension(sourcePCIDParamConfig.optiTrackDimensionId, stitchData.OptimovePublicCustomerId);
+                        }
+                    }else{
+
+                        if(sourceVisitorIdParamConfig.optiTrackDimensionId > 0){
+                            numOfParams++;
+                            _tracker.setCustomDimension(sourceVisitorIdParamConfig.optiTrackDimensionId, stitchData.OptimovePublicCustomerId);
+                        }
+                    }
+                    if(targetVsitorIdIdParamConfig.optiTrackDimensionId > 0){
+                        numOfParams++;
+                        _tracker.setCustomDimension(targetVsitorIdIdParamConfig.optiTrackDimensionId, stitchData.OptimovePublicCustomerId);
+                    }
+                    
+                    var configEventId = eventConfig.id;
+                    var eventName = StitchUsersEvent_name;                                     
+                    _tracker.setCustomDimension(_sdkConfig.eventIdCustomDimensionId, configEventId);
+                    _tracker.setCustomDimension(_sdkConfig.eventNameCustomDimensionId, eventName);
+
+                    _tracker.trackEvent(LogEventCategory_name, StitchUsersEvent_name)
+                }
+            } catch (err) {
+
+            }
+        };
+
+        // ---------------------------------------
+        // Function: getOptimoveStitchData
+        // Args: URL
+        // Gets the data from the URL which is used by
+        // Optimove Stitch Flow.
+        // return - JSON obj containng the optimovePublicCustomerId
+        //  and the status.
+        // ---------------------------------------
+        var  getOptimoveStitchData = function(currURL)
+        {
+            // We might have not Load the Piwik Yet
+            var jsonData = {};
+            jsonData["OptimoveStitchDataExist"] = false;
+            var optimovePublicCustomerId 	= "OptimovePublicCustomerId";
+            var optimoveVisitorId 			= "optimoveVisitorId";
+            var optimoveStitchFlow 			= "OptimoveStitchFlow";
+            var optimoveStitchDataExist 	= "OptimoveStitchDataExist";
+            var isStitchFlow 				= false;
+            try {
+                var parts = currURL.split('&');
+                if(parts.length > 0)
+                {
+                    parts.forEach(function(item, index) {
+                        if(item.search(optimoveStitchFlow) > -1)
+                        {
+                            isStitchFlow = item.slice(optimoveStitchFlow.length+1) == 'true';
+                        }else{
+                            isStitchFlow = false;
+                        }
+
+                        if(isStitchFlow == true)
+                        {
+                            if(item.search(optimovePublicCustomerId)  > -1)
+                            {
+                                var publicCustomerId = item.slice(optimovePublicCustomerId.length+1)
+                                jsonData[optimovePublicCustomerId] = publicCustomerId;
+                            }
+                            if(item.search(optimoveVisitorId)  > -1)
+                            {
+                                var vistorId = item.slice(optimoveVisitorId.length+1)
+                                jsonData[optimoveVisitorId] = vistorId;
+                            }
+
+                            jsonData[optimoveStitchDataExist] = true;
+                        }
+                    })
+                }
+            } catch (err) {
+
+            }
+            return jsonData;
+        };
+
+        // ---------------------------------------
+        // Function: logOptitrackUserEmail
+        // Args: email - the User email
+        // Sets the email in Optitrack Infrastructure
+        // ---------------------------------------
+        var logOptitrackUserEmail = function (THIS, emailValue) {
+            try {
+                var isValidEmail = validateEmail(email);
+                if (isValidEmail == false) {
+                    throw 'email ' + email + ' is not valid';
+                }
+
+                var eventConfig = getCustomEventConfigById(SetEmailEvent_name);
+                if(eventConfig != null)
+                {
+                    cleanCustomDimensions(); // cleaning the previous usage
+                    var emailConfig = getCustomEventParamFromConfig(eventConfig, email_param_name);
+                    _tracker.setCustomDimension(emailConfig.optiTrackDimensionId, emailValue);
+                    var configEventId = eventConfig.id;
+                    var eventName = SetEmailEvent_name;                                     
+                    _tracker.setCustomDimension(_sdkConfig.eventIdCustomDimensionId, configEventId);
+                    _tracker.setCustomDimension(_sdkConfig.eventNameCustomDimensionId, eventName);
+                    _tracker.trackEvent(LogEventCategory_name, SetEmailEvent_name);
+                }
+            } catch (err) {
+
+            }
+        };
+
+        // ---------------------------------------
+        // Function: setOptitrackUserId
+        // Args: currUserId - the public User Id
+        // Sets the in Optitrack Infrastructure User ID
+        // ---------------------------------------
+        var setOptitrackUserId = function (THIS, updatedUserId) {
+            var isValid = validateUserId(updatedUserId);
+            try {
+                if (isValid == true && _userId == null) {
+                    // We might have not Load the Piwik Yet
+                    if (typeof _tracker != 'undefined') {
+                        var existUserId = _tracker.getUserId();
+                        if(existUserId != updatedUserId)
+                        {
+                            var origVisitorId = _tracker.getVisitorId();
+                            _tracker.setUserId(updatedUserId);
+                            _userId = updatedUserId;
+                            var updatedVisitorId = _tracker.getVisitorId();
+                            logSetUserIdEvent(THIS, origVisitorId, updatedUserId, updatedVisitorId);
+                            if(_sdkConfig.supportCookieMatcher == true)
+                            {
+                                updateCookieMatcher(THIS, updatedUserId);
+                            }
+                        }
+                    }
+                }
+            } catch (err) {
+
+            }
+        };
+
+        // ---------------------------------------
+        // Function: logSetUserIdEvent
+        // Args: THIS, origVisitorId, updatedUserId
+        // Sets the in Optitrack Infrastructure User ID
+        // ---------------------------------------
+        var logSetUserIdEvent = function (THIS, origVisitorIdValue, updatedUserIdValue, updatedVisitorIdValue) {
+            try {
+                var eventConfig = getCustomEventConfigById(SetUserIdEvent_name);
+                if(eventConfig != null)
+                {
+                    cleanCustomDimensions(); // cleaning the previous usage
+                    var originalVisitorIdConfig = getCustomEventParamFromConfig(eventConfig, originalVisitorId_param_name);
+                    var updatedVisitorIdConfig = getCustomEventParamFromConfig(eventConfig, updatedVisitorId_param_name);
+                    var userIdParamConfig = getCustomEventParamFromConfig(eventConfig, userId_param_name);
+
+                    var eventId = eventConfig.id;
+                    var eventName = SetUserIdEvent_name;                                     
+                    _tracker.setCustomDimension(_sdkConfig.eventIdCustomDimensionId, eventId);
+                    _tracker.setCustomDimension(_sdkConfig.eventNameCustomDimensionId, eventName);
+
+
+                    if(userIdParamConfig != undefined)
+                    {
+                        _tracker.setCustomDimension(userIdParamConfig.optiTrackDimensionId, updatedUserIdValue);
+                    }
+
+                    if(originalVisitorIdConfig != undefined)
+                    {
+                        _tracker.setCustomDimension(originalVisitorIdConfig.optiTrackDimensionId, origVisitorIdValue);
+                    }
+
+                    if(updatedVisitorIdConfig != undefined)
+                    {
+                        _tracker.setCustomDimension(updatedVisitorIdConfig.optiTrackDimensionId, updatedVisitorIdValue);
+                    }
+
+                    _tracker.trackEvent(LogEventCategory_name, SetUserIdEvent_name);
+                }
+
+            } catch (err) {
+
+            }
+        };
+
+        // ---------------------------------------
+        // Function: updateCookieMatcher
+        // Args: None
+        // Sets the Optimove SDK Logging Mode
+        // ---------------------------------------
+        var updateCookieMatcher = function (THIS, updatedUserId)
+        {
+            var cookieMatcherUserId = null;
+            if(_userId != null)
+            {
+                cookieMatcherUserId = _userId;
+            }else{
+                cookieMatcherUserId = _tracker.getVisitorId();
+            }
+
+            setOptimoveCookie(cookieMatcherUserId);
+            matchCookie(_sdkConfig.siteId, _sdkConfig.optimoveCookieMatcherId);
+            var setOptimoveCookie = function(cookieMatcherUserId) {
+                var setCookieUrl = "https://gcm.optimove.events/setCookie?optimove_id="+cookieMatcherUserId;
+                var setCookieNode = document.createElement("img");
+                setCookieNode.style.display = "none";
+                setCookieNode.setAttribute("src", setCookieUrl);
+                document.body.appendChild(setCookieNode);
+            };
+
+            matchCookie = function(tenantId, optimoveCookieMatcherId) {
+                //var url = "https://cm.g.doubleclick.net/pixel?google_nid=OptimoveCookieMatcherID&google_cm&tenant_id=TenantID";
+                var url = "https://cm.g.doubleclick.net/pixel?google_nid=" + optimoveCookieMatcherId + "&google_cm&tenant_id=" +tenantId;
+                var node = document.createElement("img");
+                node.style.display = "none";
+                node.setAttribute("src", url);
+                document.body.appendChild(node);
+            }
+        }
+
+        // ---------------------------------------
+        // Function: getOptitrackVisitorInfo
+        // Args: None
+        // Sets the Optimove SDK Logging Mode
+        // ---------------------------------------
+        var getOptitrackVisitorInfo = function (THIS) {
+            var visitorInfo = [];
+            try {
+                if (typeof _tracker != 'undefined') {
+                    visitorInfo = _tracker.getVisitorInfo();
+                }else{
+                    throw  'tracker is not defined';
+                }
+            }catch (err) {
+
+            }
+
+            return visitorInfo;
+        };
+
+        // ------------------------------ Optitrack Private Utility member functions ------------------------------
+        // ---------------------------------------
+        // Function: getCustomEventConfigById
+        // Args: eventId
+        // returns the event Configuration.
+        // ---------------------------------------
+        var getCustomEventConfigById = function(eventId){
+            var currEvent = _sdkConfig.events[eventId];
+            if(currEvent == undefined)
+            {
+                return null;
+            }
+            return currEvent;
+        };
+
+        // ---------------------------------------
+        // Function: getCustomEventParamFromConfig
+        // Args: eventConfig, paramName
+        // returns the event Configuration.
+        // ---------------------------------------
+        var getCustomEventParamFromConfig = function(eventConfig, paramName){
+            var currParam = eventConfig.parameters[paramName];
+            if(currParam == undefined)
+            {
+                return null;
+            }
+            return currParam;
+        };
+
+        // ---------------------------------------
+        // Function: getOptitrackVisitorInfo
+        // Args: updatedUserId
+        // Sets the Optimove SDK Logging Mode
+        // We ill allow to set null as userId,
+        // inorder to enable reset of the curren userId when logged out
+        // ---------------------------------------
+        var validateUserId = function(updatedUserId){
+
+            if (typeof updatedUserId == 'undefined' || typeof updatedUserId != 'string' || updatedUserId == undefined || updatedUserId == '' || updatedUserId == 'null' ||  updatedUserId == 'undefined') {
+                return false;
+            }
+            else{
+                return true;
+            }
+
+        };
+
+        // ---------------------------------------
+        // Function: validatePageURL
+        // Args: email
+        // validats  the email with regexpress
+        // taken from https://mathiasbynens.be/demo/url-regex
+        // the selectd version of: @stephenhay
+        // ---------------------------------------
+        var  validatePageURL = function (customURL) {
+
+            var regexp = /(https?|http?|ftp):\/\/[^\s\/$.?#].[^\s]*$/;
+            return regexp.test(customURL);
+        };
+
+        // ---------------------------------------
+        // Function: validateEmail
+        // Args: email
+        // validats  the email with regexpress
+        // ---------------------------------------
+        var  validateEmail = function (email) {
+            var regexp = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+            return regexp.test(email);
+        };
+
+        // ---------------------------------------
+        // Function: loadJSResource
+        // Args:url, callback
+        // Handle the User Options to update the current SDK Object.
+        // ---------------------------------------
+        var loadJSResource = function (THIS, resourceURL, callback) {
+            if(resourceURL != null)
+            {
+                var d = document;
+                var g = d.createElement('script');
+                var s = d.getElementsByTagName('script')[0];
+                g.type = 'text/javascript';
+                g.async = true;
+                g.defer = true;
+                g.src = resourceURL;
+                g.onload= callback ;
+                s.parentNode.insertBefore(g, s);
+            }
+        };
+
+        // ---------------------------------------
+        // Function: loadOptiTrackJSResource
+        // Args:url, callback
+        // Handle the User Options to update the current SDK Object.
+        // ---------------------------------------
+        var loadOptiTrackJSResource = function (THIS, resourceURL, callback) {
+            if(resourceURL != null)
+            {
+                var d = document;
+                var g = d.createElement('script');
+                var s = d.getElementsByTagName('script')[0];
+                g.type = 'text/javascript';
+                g.async = true;
+                g.defer = true;
+                g.src = resourceURL;
+                g.onload= function(){ handleTrackerLoadedCB(THIS,callback) } ;
+                s.parentNode.insertBefore(g, s);
+            }
+        };
+
+        // ---------------------------------------
+        // Function: handleTrackerLoadedCB
+        // Args: callback
+        // Load the Tracker JS resource, and then call the callback
+        // ---------------------------------------
+        var handleTrackerLoadedCB = function (THIS, callback){
+            _tracker = createOptitrackTracker();
+            handleInitializationFinished(THIS,_tracker, callback);
+        };
+
+        // ---------------------------------------
+        // Function: handleInitializationFinished
+        // Args: tracker, callback
+        // Update client with initialization finshed status
+        // ---------------------------------------
+        var handleInitializationFinished = function (THIS, tracker, callback){
+            if(tracker == null)
+                callback(false);
+            else
+                callback(true);
+        };
+
+        // ---------------------------------------
+        // Function: createOptitrackTracker
+        // Args: SDKConfig
+        // create the tracker object
+        // ---------------------------------------
+        var createOptitrackTracker = function (){
+            if (typeof self.Piwik != 'undefined') {
+                var tracker = self.Piwik.getAsyncTracker( _ot_endpoint+ 'piwik.php', _ot_tenantId );
+                return tracker;
+            }else {
+                return undefined;
+            }
+        };
+
+        // ---------------------------------------
+        // Function: getOptiTrackEndpointFromConfig
+        // Args: SDKConfig
+        // Get the Tracker Endpoint from the Config
+        // ---------------------------------------
+        var getOptiTrackEndpointFromConfig = function (SDKConfig){
+            return  SDKConfig.optitrackEndpoint;
+        };
+
+        // ---------------------------------------
+        // Function: getOptiTrackTenantIdFromConfig
+        // Args: SDKConfig
+        // Get the siteId from the Config
+        // ---------------------------------------
+        var getOptiTrackTenantIdFromConfig = function (SDKConfig){
+
+            return   SDKConfig.siteId;
+        };
+
+        // ---------------------------------------
+        // Function: buildPiwikResourceURL
+        // Args: SDKConfig
+        // build Tracker endpoint URL.
+        // ---------------------------------------
+        var buildPiwikResourceURL = function (SDKConfig){
+            return SDKConfig.optitrackEndpoint + 'piwik.js';
+        };
+
+        // ---------------------------------------
+        // Function: cleanCustomDimensions
+        // Args: none
+        // clean the custom Dimensions from previous usage.
+        // ---------------------------------------
+        var cleanCustomDimensions= function (){
+            var customDimensionId = _sdkConfig.actionCustomDimensionsStartId
+            var maxActionCustomDimensionsId = _sdkConfig.actionCustomDimensionsStartId + _sdkConfig.maxActionCustomDimensions;
+            for( customDimensionId = _sdkConfig.actionCustomDimensionsStartId; customDimensionId <= maxActionCustomDimensionsId  ; customDimensionId++){
+                _tracker.deleteCustomDimension (customDimensionId);
+            };
+            
+        }
+
+        return {
+            initializeOptiTrack : initializeOptiTrack,
+            logPageVisitEvent : logPageVisitEvent,
+            setUserId : setUserId,
+            logUserEmail: logUserEmail,
+            logEvent : logEvent,
+            getOptitrackVisitorInfo: getOptitrackVisitorInfo
+        };
+
+
+        
+    }();
+
+    var getVisitorsObj = function(){
+        var visitorsInfo = optitrackModule.getOptitrackVisitorInfo();
+        return {
+            visitorId : visitorsInfo[1],
+            visitCount : visitorsInfo[3]
+        }
+    }
+    var _API = {
+        getVersion : function(){
+            return _version;
+        },
+        getConfigurationVersion : function(){
+            return _configuration.version;
+        },
+        reportEvent : function(eventName, parameters){
+            var validEvent = validateEvent(eventName, parameters);
+            validEvent.userId = _userId;
+            if(validEvent){
+                if(_configuration.enableOptitrack){
+                    logger.log("info","in reportEvent Optitrack");
+                    optitrackModule.logEvent(eventName, parameters);
+                }
+
+                if(_configuration.enableRealtime){
+                    logger.log("info","in reportEvent Real time");
+                    if(_configuration.enableOptitrack){
+                        validEvent.visitorData = getVisitorsObj();
+                    }
+
+                    realTimeModule.reportEvent(validEvent);
+                }
+            }
+        },
+        setUserId : function(updatedUserId){
+            _userId = updatedUserId;
+            if(_configuration.enableOptitrack){
+                logger.log("info","call setUserId Optitrack");
+                 optitrackModule.setUserId(updatedUserId);
+            }
+           
+        },
+        setUserEmail : function(email){
+            _userEmail = email;
+            if(_configuration.enableOptitrack){
+                logger.log("info","call setUserEmail Optitrack");
+                optitrackModule.logUserEmail();
+            }
+        },
+        setPageVisit : function(customURL, pageTitle){
+            if(_configuration.enableOptitrack){
+                logger.log("info","call setPageVisit Optitrack");
+                optitrackModule.logPageVisitEvent(customURL, pageTitle);
+            }
+
+        }
+    }
+
+    return {
+        initialize : init,
+        API : _API,
+
+    }
+
+}();
+
+
+
+
