@@ -1,10 +1,17 @@
 var optimoveTenantConfiguration = {
-    version: "1.0.0",
-    realtimeToken: "dfasdf4fwf234rfwef2rf2w3efd234df2freff23dff3",
-    realtimeGateway: "https://102.22.33.44/",   
+    version: "1.0.0",  
+    realtimeMetaData:{
+        realtimeToken: "dfasdf4fwf234rfwef2rf2w3efd234df2freff23dff3",
+        realtimeGateway: "https://102.22.33.44/",   
+        options: {
+        showDimmer: true,
+        showWatermark: true,
+        popupCallback: null
+        }
+    },
     optitrackMetaData:{
-        enableHeartBeatTimer: true,
-        heartBeatTimer: 30,
+        enableHeartBeatTimer: false,
+        heartBeatTimer: 0,
         eventIdCustomDimensionId: 6,
         eventNameCustomDimensionId: 7,        
         visitCustomDimensionsStartId: 1,
@@ -14,20 +21,16 @@ var optimoveTenantConfiguration = {
         optitrackEndpoint: "http://104.155.164.245/",
         siteId: 94,
     },
+    cookieMatcherMetaData:{  
+        optimoveCookieMatcherId: undefined,
+    },
     isSPA: false,
     enableOptitrack: true,
     enableVisitors: true,
     enableRealtime: true,   
-    supportCookieMatcher: false,
-    optimoveCookieMatcherId: undefined,
-    cookieMatcherId: null,
-    supportUserEmailStitch: true,     
- 
-    options: {
-        showDimmer: true,
-        showWatermark: true,
-        popupCallback: null
-    },
+    supportCookieMatcher: false,       
+    supportUserEmailStitch: true,    
+     
     events: {
         
         set_user_id_event: {

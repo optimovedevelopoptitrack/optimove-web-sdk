@@ -132,7 +132,7 @@ var optimoveSDK = function(){
 
             try {
                 var paramsString = objToParams(data);
-                var url = _configuration.realtimeGateway + event + "?" + paramsString;
+                var url = _configuration.realtimeMetaData.realtimeGateway + event + "?" + paramsString;
                 var callbackName = 'optiReal_callback_' + createGuid();
                 window[callbackName] = function (data) {
                     delete window[callbackName];
@@ -166,19 +166,19 @@ var optimoveSDK = function(){
 
         var handleJsonpResponse = function (response) {
             try {
-                if (_configuration.options.popupCallBack) {
-                    _configuration.options.popupCallBack(response);
+                if (_configuration.realtimeMetaData.options.popupCallBack) {
+                    _configuration.realtimeMetaData.options.popupCallBack(response);
                 }
                 else{
                     if (response.IsSuccess && response.Data != '') {
                         var popupDiv = document.createElement('div');
                         var divHtml = "";
-                        var opacity = _configuration.options.showDimmer ? 0.5 : 0;
+                        var opacity = _configuration.realtimeMetaData.options.showDimmer ? 0.5 : 0;
                         divHtml = "<div id='optiRealPopupDimmer' style='position: fixed;bottom: 0;right: 0;top: 0;left: 0;overflow: hidden;display: none; z-index:999999999;background: #000000;opacity : " + opacity + ";display:block;width: auto;height: auto;'></div>";
                         document.addEventListener("mousedown", OptiRealApi.closePopup);
                         var poweredByHtml = "<div style='position: absolute;z-index:9999999999; clear:both;font-family : Arial;font-size : 9px;color : #CCCCCC;padding-top:6px;margin-left: 5px;'>Powered by Optimove</div>";
                         divHtml += "<div style='max-height:90%;max-width:90%;top: 50%;left: 50%;transform:translate(-50%, -50%);position: fixed;z-index:9999999999;'><div style=' clear:both;min-width: 100px;min-height: 100px;background-color:white; text-align:center;box-shadow:0 0 5px 0 rgba(0, 0, 0, 0.2);'><div style='position:absolute;right:-13px;top:-13px;cursor:pointer;z-index:99999999999; color:white' onclick='OptiRealApi.closePopup();'><img id='optiRealclosePopupImage' src='https://d3qycynbsy5rsn.cloudfront.net/banner_pop_x.png' /></div><div style='border-style: solid;border-width: 5px;border-radius:5px; border-color:white;' >" + response.Data + "</div></div>"
-                            + (_configuration.options.showDimmer && _configuration.options.showWatermark ? poweredByHtml : "") + "</div>";
+                            + (_configuration.realtimeMetaData.options.showDimmer && _configuration.realtimeMetaData.options.showWatermark ? poweredByHtml : "") + "</div>";
                         popupDiv.innerHTML = divHtml;
                         document.body.appendChild(popupDiv);
                         //OptiRealApi.popup = popupDiv;
@@ -197,7 +197,7 @@ var optimoveSDK = function(){
                 params[eventParam] = event.parameters[eventParam].value;
             }
 
-            jsonpAsyncCall("reportEvent_b", { tid : _configuration.realtimeToken,
+            jsonpAsyncCall("reportEvent_b", { tid : _configuration.realtimeMetaData.realtimeToken,
                     cid : event.userId,
                     eid : event.id,
                     vid : event.visitorData ? event.visitorData.visitorId : null,
@@ -674,7 +674,7 @@ var optimoveSDK = function(){
 
             setOptimoveCookie(cookieMatcherUserId);
             var siteId = getOptiTrackTenantIdFromConfig(_sdkConfig);
-            matchCookie(siteId, _sdkConfig.optimoveCookieMatcherId);
+            matchCookie(siteId, _sdkConfig.cookieMatcherMetaData.optimoveCookieMatcherId);
             var setOptimoveCookie = function(cookieMatcherUserId) {
                 var setCookieUrl = "https://gcm.optimove.events/setCookie?optimove_id="+cookieMatcherUserId;
                 var setCookieNode = document.createElement("img");

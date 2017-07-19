@@ -1,8 +1,14 @@
 var optimoveTenantConfiguration = {
     version: "1.0.0",
-    realtimeToken: "dfasdf4fwf234rfwef2rf2w3efd234df2freff23dff3",
-    realtimeGateway: "https://102.22.33.44/",
-   
+   realtimeMetaData:{
+        realtimeToken: "dfasdf4fwf234rfwef2rf2w3efd234df2freff23dff3",
+        realtimeGateway: "https://102.22.33.44/",   
+        options: {
+        showDimmer: true,
+        showWatermark: true,
+        popupCallback: null
+        }
+    },
     optitrackMetaData:{
         enableHeartBeatTimer: false,
         heartBeatTimer: 0,
@@ -15,20 +21,16 @@ var optimoveTenantConfiguration = {
         optitrackEndpoint: "http://104.154.167.173/",
         siteId: 202,
     },
+    cookieMatcherMetaData:{  
+        optimoveCookieMatcherId: undefined,
+    },
     isSPA: false,
     enableOptitrack: true,
     enableVisitors: true,
     enableRealtime: true,   
-    supportCookieMatcher: false,
-    optimoveCookieMatcherId: undefined,
-    cookieMatcherId: null,
-    supportUserEmailStitch: true,        
- 
-    options: {
-        showDimmer: true,
-        showWatermark: true,
-        popupCallback: null
-    },
+    supportCookieMatcher: false,       
+    supportUserEmailStitch: true,     
+    
      events: {
         addToCart: {
             id: 9,
