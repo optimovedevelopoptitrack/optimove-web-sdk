@@ -230,6 +230,8 @@ var optimoveSDK = function(){
         var SetUserIdEvent_name = 'set_user_id_event';
         var SetEmailEvent_name = 'Set_email_event';
         var StitchUsersEvent_name = 'stitch_event';
+        var PageCategoryEvent_name = 'page_category_event';
+        var UserAgentHeaderEvent_name =  'user_agent_header_event';
         var email_param_name = "email";
         var originalVisitorId_param_name = "originalVisitorId";
         var userId_param_name = "userId";
@@ -265,8 +267,8 @@ var optimoveSDK = function(){
         // Args:
         // Gets the Optimove SDK Verion
         // ---------------------------------------
-        var logPageVisitEvent = function (customURL, pageTitle) {
-            logOptitrackPageVisit(this, customURL, pageTitle);
+        var logPageVisitEvent = function (customURL, pageTitle, category) {
+            logOptitrackPageVisit(this, customURL, pageTitle, category);
         }
 
         // ---------------------------------------
@@ -329,8 +331,8 @@ var optimoveSDK = function(){
 
                     var configEventId = eventConfig.id;
                     var eventName = eventId;                                     
-                    _tracker.setCustomDimension(_sdkConfig.eventIdCustomDimensionId, configEventId);
-                    _tracker.setCustomDimension(_sdkConfig.eventNameCustomDimensionId, eventName);
+                    _tracker.setCustomDimension(_sdkConfig.optitrackMetaData.eventIdCustomDimensionId, configEventId);
+                    _tracker.setCustomDimension(_sdkConfig.optitrackMetaData.eventNameCustomDimensionId, eventName);
                     
                     _tracker.trackEvent(LogEventCategory_name, eventId);
                     return true;
@@ -345,10 +347,10 @@ var optimoveSDK = function(){
 
         // ---------------------------------------
         // Function: logOptitrackPageVisit
-        // Args: pageURL, pageTitle
+        // Args: pageURL, pageTitle, category
         // Send Optitrack Infrastructure with the Loading Page Event.
         // ---------------------------------------
-        var logOptitrackPageVisit = function (THIS, pageURL, pageTitle) {
+        var logOptitrackPageVisit = function (THIS, pageURL, pageTitle, category) {
             try{
                 var isValidURL = validatePageURL(pageURL);
 
@@ -365,17 +367,37 @@ var optimoveSDK = function(){
                 {
                     throw 'customURL-' + pageURL  + 'is not a valid URL';
                 }
+                // enable link tracking
                 _tracker.enableLinkTracking(true);
-                if(_sdkConfig.enableHeartBeatTimer == true )
+
+                if(_sdkConfig.optitrackMetaData.enableHeartBeatTimer == true )
                 {
-                    _tracker.enableHeartBeatTimer(_sdkConfig.heartBeatTimer);
+                    _tracker.enableHeartBeatTimer(_sdkConfig.optitrackMetaData.heartBeatTimer);
                 }
 
                 _tracker.setCustomUrl(pageURL);
-                _tracker.trackPageView(pageTitle);
+
+                if(typeof pageTitle != 'undefined' && pageTitle != null)
+                {
+                    _tracker.trackPageView(pageTitle);
+                }else{
+
+                    _tracker.trackPageView();
+                }
+                
+                if(typeof category != 'undefined')
+                {
+                    logPageCategoryEvent(THIS,category);
+                }
+                
+                if(_sdkConfig.optitrackMetaData.sendUserAgentHeader == true)
+                {
+                    logUserAgentHeaderEvent(THIS);
+                }
+
                 if(_sdkConfig.supportCookieMatcher == true)
                 {
-                    updateCookieMatcher(THIS, updatedUserId);
+                    updateCookieMatcher(THIS);
                 }
 
                 if(_sdkConfig.supportUserEmailStitch == true)
@@ -456,8 +478,8 @@ var optimoveSDK = function(){
                     
                     var configEventId = eventConfig.id;
                     var eventName = StitchUsersEvent_name;                                     
-                    _tracker.setCustomDimension(_sdkConfig.eventIdCustomDimensionId, configEventId);
-                    _tracker.setCustomDimension(_sdkConfig.eventNameCustomDimensionId, eventName);
+                    _tracker.setCustomDimension(_sdkConfig.optitrackMetaData.eventIdCustomDimensionId, configEventId);
+                    _tracker.setCustomDimension(_sdkConfig.optitrackMetaData.eventNameCustomDimensionId, eventName);
 
                     _tracker.trackEvent(LogEventCategory_name, StitchUsersEvent_name)
                 }
@@ -520,6 +542,28 @@ var optimoveSDK = function(){
         };
 
         // ---------------------------------------
+        // Function: logPageCategoryEvent
+        // Args: email - the User email
+        // Sets the email in Optitrack Infrastructure
+        // ---------------------------------------
+        var logPageCategoryEvent= function (THIS, category){
+
+            logOptitrackCustomEvent(THIS,PageCategoryEvent_name, {category: category});
+            
+        };
+
+        // ---------------------------------------
+        // Function: logUserAgentHeaderEvent
+        // Args: None
+        // Sets the UserAgent of the Current Browser
+        // ---------------------------------------
+        var logUserAgentHeaderEvent= function (THIS){
+            if(typeof navigator != 'undefined' && typeof navigator.userAgent != 'undefined' ){
+                logOptitrackCustomEvent(THIS,UserAgentHeaderEvent_name, {user_agent_header: navigator.userAgent});
+            }                                    
+        };
+        
+        // ---------------------------------------
         // Function: logOptitrackUserEmail
         // Args: email - the User email
         // Sets the email in Optitrack Infrastructure
@@ -531,18 +575,8 @@ var optimoveSDK = function(){
                     throw 'email ' + email + ' is not valid';
                 }
 
-                var eventConfig = getCustomEventConfigById(SetEmailEvent_name);
-                if(eventConfig != null)
-                {
-                    cleanCustomDimensions(); // cleaning the previous usage
-                    var emailConfig = getCustomEventParamFromConfig(eventConfig, email_param_name);
-                    _tracker.setCustomDimension(emailConfig.optiTrackDimensionId, emailValue);
-                    var configEventId = eventConfig.id;
-                    var eventName = SetEmailEvent_name;                                     
-                    _tracker.setCustomDimension(_sdkConfig.eventIdCustomDimensionId, configEventId);
-                    _tracker.setCustomDimension(_sdkConfig.eventNameCustomDimensionId, eventName);
-                    _tracker.trackEvent(LogEventCategory_name, SetEmailEvent_name);
-                }
+                logOptitrackCustomEvent(THIS,SetEmailEvent_name, {email: email});
+               
             } catch (err) {
 
             }
@@ -569,7 +603,7 @@ var optimoveSDK = function(){
                             logSetUserIdEvent(THIS, origVisitorId, updatedUserId, updatedVisitorId);
                             if(_sdkConfig.supportCookieMatcher == true)
                             {
-                                updateCookieMatcher(THIS, updatedUserId);
+                                updateCookieMatcher(THIS);
                             }
                         }
                     }
@@ -596,8 +630,8 @@ var optimoveSDK = function(){
 
                     var eventId = eventConfig.id;
                     var eventName = SetUserIdEvent_name;                                     
-                    _tracker.setCustomDimension(_sdkConfig.eventIdCustomDimensionId, eventId);
-                    _tracker.setCustomDimension(_sdkConfig.eventNameCustomDimensionId, eventName);
+                    _tracker.setCustomDimension(_sdkConfig.optitrackMetaData.eventIdCustomDimensionId, eventId);
+                    _tracker.setCustomDimension(_sdkConfig.optitrackMetaData.eventNameCustomDimensionId, eventName);
 
 
                     if(userIdParamConfig != undefined)
@@ -628,7 +662,7 @@ var optimoveSDK = function(){
         // Args: None
         // Sets the Optimove SDK Logging Mode
         // ---------------------------------------
-        var updateCookieMatcher = function (THIS, updatedUserId)
+        var updateCookieMatcher = function (THIS)
         {
             var cookieMatcherUserId = null;
             if(_userId != null)
@@ -639,7 +673,8 @@ var optimoveSDK = function(){
             }
 
             setOptimoveCookie(cookieMatcherUserId);
-            matchCookie(_sdkConfig.siteId, _sdkConfig.optimoveCookieMatcherId);
+            var siteId = getOptiTrackTenantIdFromConfig(_sdkConfig);
+            matchCookie(siteId, _sdkConfig.optimoveCookieMatcherId);
             var setOptimoveCookie = function(cookieMatcherUserId) {
                 var setCookieUrl = "https://gcm.optimove.events/setCookie?optimove_id="+cookieMatcherUserId;
                 var setCookieNode = document.createElement("img");
@@ -711,12 +746,13 @@ var optimoveSDK = function(){
         // Function: getOptitrackVisitorInfo
         // Args: updatedUserId
         // Sets the Optimove SDK Logging Mode
-        // We ill allow to set null as userId,
+        // We will allow to set null as userId,
+        // Other values like "Undefined" "null" etc. are invalid
         // inorder to enable reset of the curren userId when logged out
         // ---------------------------------------
         var validateUserId = function(updatedUserId){
 
-            if (typeof updatedUserId == 'undefined' || typeof updatedUserId != 'string' || updatedUserId == undefined || updatedUserId == '' || updatedUserId == 'null' ||  updatedUserId == 'undefined') {
+            if (typeof updatedUserId == 'undefined' || typeof updatedUserId != 'string' || updatedUserId == undefined || updatedUserId == '' || updatedUserId == 'null' ||  updatedUserId.includes("undefine")) {
                 return false;
             }
             else{
@@ -830,7 +866,7 @@ var optimoveSDK = function(){
         // Get the Tracker Endpoint from the Config
         // ---------------------------------------
         var getOptiTrackEndpointFromConfig = function (SDKConfig){
-            return  SDKConfig.optitrackEndpoint;
+            return  SDKConfig.optitrackMetaData.optitrackEndpoint;
         };
 
         // ---------------------------------------
@@ -840,7 +876,7 @@ var optimoveSDK = function(){
         // ---------------------------------------
         var getOptiTrackTenantIdFromConfig = function (SDKConfig){
 
-            return   SDKConfig.siteId;
+            return   SDKConfig.optitrackMetaData.siteId;
         };
 
         // ---------------------------------------
@@ -849,7 +885,8 @@ var optimoveSDK = function(){
         // build Tracker endpoint URL.
         // ---------------------------------------
         var buildPiwikResourceURL = function (SDKConfig){
-            return SDKConfig.optitrackEndpoint + 'piwik.js';
+            var piwikURL = getOptiTrackEndpointFromConfig(SDKConfig) + 'piwik.js';
+            return piwikURL;
         };
 
         // ---------------------------------------
@@ -858,9 +895,9 @@ var optimoveSDK = function(){
         // clean the custom Dimensions from previous usage.
         // ---------------------------------------
         var cleanCustomDimensions= function (){
-            var customDimensionId = _sdkConfig.actionCustomDimensionsStartId
-            var maxActionCustomDimensionsId = _sdkConfig.actionCustomDimensionsStartId + _sdkConfig.maxActionCustomDimensions;
-            for( customDimensionId = _sdkConfig.actionCustomDimensionsStartId; customDimensionId <= maxActionCustomDimensionsId  ; customDimensionId++){
+            var customDimensionId = _sdkConfig.optitrackMetaData.actionCustomDimensionsStartId
+            var maxActionCustomDimensionsId = _sdkConfig.optitrackMetaData.actionCustomDimensionsStartId + _sdkConfig.optitrackMetaData.maxActionCustomDimensions;
+            for( customDimensionId = _sdkConfig.optitrackMetaData.actionCustomDimensionsStartId; customDimensionId <= maxActionCustomDimensionsId  ; customDimensionId++){
                 _tracker.deleteCustomDimension (customDimensionId);
             };
             
@@ -927,10 +964,10 @@ var optimoveSDK = function(){
                 optitrackModule.logUserEmail();
             }
         },
-        setPageVisit : function(customURL, pageTitle){
+        setPageVisit : function(customURL, pageTitle, category){
             if(_configuration.enableOptitrack){
                 logger.log("info","call setPageVisit Optitrack");
-                optitrackModule.logPageVisitEvent(customURL, pageTitle);
+                optitrackModule.logPageVisitEvent(customURL, pageTitle, category);
             }
 
         }
