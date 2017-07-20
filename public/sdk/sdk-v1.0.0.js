@@ -265,6 +265,7 @@ var optimoveSDK = function(){
         // ---------------------------------------
         var initializeOptiTrack = function (logger, SDKConfig, callback_ready) {
             _sdkConfig = SDKConfig;
+            LogEventCategory_name = _sdkConfig.optitrackMetaData.eventCategoryName;
             _ot_endpoint = getOptiTrackEndpointFromConfig(SDKConfig)
             _ot_tenantId = getOptiTrackTenantIdFromConfig(SDKConfig);
             _piwikURL = buildPiwikResourceURL(SDKConfig);
