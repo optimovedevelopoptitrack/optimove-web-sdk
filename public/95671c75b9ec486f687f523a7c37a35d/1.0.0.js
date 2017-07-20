@@ -13,6 +13,7 @@ var optimoveTenantConfiguration = {
         sendUserAgentHeader: true,
         enableHeartBeatTimer: true,
         heartBeatTimer: 30,
+        eventCategoryName: "LogEvent",
         eventIdCustomDimensionId: 6,
         eventNameCustomDimensionId: 7,        
         visitCustomDimensionsStartId: 1,
