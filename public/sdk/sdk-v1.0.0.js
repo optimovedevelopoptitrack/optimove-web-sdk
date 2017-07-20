@@ -191,17 +191,36 @@ var optimoveSDK = function(){
             }
         }
 
-        var _reportEvent = function (event) {
+        var callRealtimeAsync = function (event, data, callback) {
+            var paramsString = objToParams(data);
+            var xmlhttp = new XMLHttpRequest(); 
+            var url =  _configuration.realtimeMetaData.realtimeGateway.lastIndexOf('/') == _configuration.realtimeMetaData.realtimeGateway.length -1 ? 
+                                                                                                 _configuration.realtimeMetaData.realtimeGateway + event : 
+                                                                                                 _configuration.realtimeMetaData.realtimeGateway + '/' + event;
+            xmlhttp.open("POST", url, true);
+            xmlhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+            xmlhttp.onreadystatechange = function() {
+                if (this.readyState == 4 && this.status == 200) {
+                    var responseData = JSON.parse(this.responseText);
+                    handleJsonpResponse(response);
+                }
+            };
+            
+            xmlhttp.send(paramsString);
+        }
+
+        var reportEvent = function (event) {
             var params = {};
             for(var eventParam in event.parameters){
                 params[eventParam] = event.parameters[eventParam].value;
             }
 
-            jsonpAsyncCall("reportEvent_b", { tid : _configuration.realtimeMetaData.realtimeToken,
+            callRealtimeAsync("reportEvent", {
+                    tid : _configuration.realtimeMetaData.realtimeToken,
                     cid : event.userId,
                     eid : event.id,
-                    vid : event.visitorData ? event.visitorData.visitorId : null,
-                    vcount : event.visitorData ? event.visitorData.visitCount : null,
+                    visitorId : event.visitorData ? event.visitorData.visitorId : null,
+                    visitCount : event.visitorData ? event.visitorData.visitCount : null,
                     context : JSON.stringify(params)
                 },
                 function (response) {
@@ -211,7 +230,7 @@ var optimoveSDK = function(){
         }
 
         return {
-            reportEvent : _reportEvent
+            reportEvent : reportEvent
         }
 
     }()
@@ -993,7 +1012,6 @@ var optimoveSDK = function(){
     }
 
 }();
-
 
 
 

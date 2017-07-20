@@ -12,6 +12,7 @@ var optimoveTenantConfiguration = {
     optitrackMetaData:{
         enableHeartBeatTimer: false,
         heartBeatTimer: 0,
+        eventCategoryName: "LogEvent",
         eventIdCustomDimensionId: 6,
         eventNameCustomDimensionId: 7,        
         visitCustomDimensionsStartId: 1,
