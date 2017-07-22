@@ -243,6 +243,7 @@ var optimoveSDK = function(){
         var _configURL  	= null;
         var _tracker 		= null;
         var _sdkConfig 		= null;
+        var _logger         = null;
         var _pageVisitCount = 0;
         // ------------------------------ Event Const Values ------------------------------
         var LogEventCategory_name = 'LogEvent';
@@ -254,7 +255,9 @@ var optimoveSDK = function(){
         var email_param_name = "email";
         var originalVisitorId_param_name = "originalVisitorId";
         var userId_param_name = "userId";
-        var updatedVisitorId_param_name = "updatedVisitorId"
+        var updatedVisitorId_param_name = "updatedVisitorId";
+        var clientCustomerIDKey = '215d26f4be2047f348066e44ee7fe3d6';
+        var userAgentIDKey = '11602c8b76fe7626ca586081b94892e4';
         // ------------------------------ SDK public member functions ------------------------------
 
         // ---------------------------------------
@@ -264,6 +267,7 @@ var optimoveSDK = function(){
         // Gets the Optimove SDK Verion
         // ---------------------------------------
         var initializeOptiTrack = function (logger, SDKConfig, callback_ready) {
+            _logger = logger;
             _sdkConfig = SDKConfig;
             LogEventCategory_name = _sdkConfig.optitrackMetaData.eventCategoryName;
             _ot_endpoint = getOptiTrackEndpointFromConfig(SDKConfig)
@@ -373,6 +377,8 @@ var optimoveSDK = function(){
         var logOptitrackPageVisit = function (THIS, pageURL, pageTitle, category) {
             try{
                 var isValidURL = validatePageURL(pageURL);
+
+                updateContextUserId(THIS);
 
                 if(_sdkConfig.isSPASite == true)
                 {
@@ -573,8 +579,15 @@ var optimoveSDK = function(){
         // Sets the UserAgent of the Current Browser
         // ---------------------------------------
         var logUserAgentHeaderEvent= function (THIS){
+
+            var userAgenteHeaderPersisted = getPersistedSDKSessionData(THIS, userAgentIDKey);
+            if(userAgenteHeaderPersisted != null){
+                _logger.log('info', 'User-Agent Header Already triggered');
+                return;
+            }
             if(typeof navigator != 'undefined' && typeof navigator.userAgent != 'undefined' ){
                 logOptitrackCustomEvent(THIS,UserAgentHeaderEvent_name, {user_agent_header: navigator.userAgent});
+                persistSDKSessionData(THIS, userAgentIDKey, true);
             }                                    
         };
         
@@ -606,6 +619,9 @@ var optimoveSDK = function(){
             var isValid = validateUserId(updatedUserId);
             try {
                 if (isValid == true && _userId == null) {
+
+                    persistUserId(THIS, updatedUserId);
+                    
                     // We might have not Load the Piwik Yet
                     if (typeof _tracker != 'undefined') {
                         var existUserId = _tracker.getUserId();
@@ -749,6 +765,102 @@ var optimoveSDK = function(){
             return regexp.test(customURL);
         };
 
+        // ---------------------------------------
+        // Function: updateContextUserId
+        // Args: THIS
+        // updates the following Events user Id.
+        // This would be done using the sessionStorage which
+        // would persist the user ID as signed by t he user.
+        // ---------------------------------------
+        var updateContextUserId = function(THIS){
+            if(_userId == null){
+                THIS._userId = getPersistedUserId(THIS);
+                if(typeof _tracker != 'undefined' && THIS._userId != null)
+                    {
+                        _tracker.setUserId(THIS._userId);
+                        return true;
+                    }
+            }else{
+                // allready exist and assigned.
+
+            }
+            return false;
+        };
+
+        // ---------------------------------------
+        // Function: persistSDKSessionData
+        // Args: key, updatedValue
+        // persists the key, updatedValue in the sessionStorage for session TLV 
+        // ---------------------------------------
+        var persistSDKSessionData = function (THIS, key, updatedValue)
+        {
+            try {
+                 if(_sdkConfig.optitrackMetaData.useSessionStorage == true){
+                        var currValue = sessionStorage.getItem(key);
+                        if( currValue == null || currValue != updatedValue){
+                            sessionStorage.setItem(key, updatedValue );
+                        }
+                 }else{
+                      _logger.log("info","Optitrack: persistSDKSessionData()  Not  Persisted");
+                 }
+            } catch (error) {
+                _logger.log("error","Optitrack: persistSDKSessionData()  Failed error = " + error);
+            }
+        };
+             
+        // ---------------------------------------
+        // Function: getPersistedSDKSessionData
+        // Args: key
+        // persists the key, updatedValue in the sessionStorage for session TLV 
+        // ---------------------------------------
+        var getPersistedSDKSessionData = function (THIS, key)
+        {
+            try {
+                 if(_sdkConfig.optitrackMetaData.useSessionStorage == true){
+                        var value = sessionStorage.getItem(key);
+                        if( value != null){
+                             var resultObject = 
+                            {
+                                key : key,
+                                value : value,
+                            };
+                            return resultObject;
+                        }
+                 }else{
+                      _logger.log("info","Optitrack: persistSDKSessionData()  key:" + key  + " Not Persisted");
+                      return null;
+                 }
+            } catch (error) {
+                _logger.log("error","Optitrack: persistSDKSessionData()  Failed error = " + error);
+                return null;
+            }
+        };
+        // ---------------------------------------
+        // Function: persistUserId
+        // Args: updatedUserId
+        // persists the USerId for usage in sabsequent pages in case the 
+        // User does not calls it appropriatly.
+        // ---------------------------------------
+        var persistUserId = function (THIS, updatedUserId)
+        {
+            persistSDKSessionData(THIS, clientCustomerIDKey, updatedUserId);
+        };
+                   
+        // ---------------------------------------
+        // Function: getPersistedUserId
+        // Args: None
+        // Get persists the UserId for usage.
+        // ---------------------------------------
+        var getPersistedUserId = function (THIS)
+        {
+             var clientCustomerIDKeyValue = getPersistedSDKSessionData(THIS, clientCustomerIDKey);
+             if( clientCustomerIDKeyValue != null){
+                            
+                return clientCustomerIDKeyValue.value;
+             }
+           
+        };
+               
         // ---------------------------------------
         // Function: validateEmail
         // Args: email

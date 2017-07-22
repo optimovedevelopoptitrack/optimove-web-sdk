@@ -11,6 +11,7 @@ var optimoveTenantConfiguration = {
     },
     optitrackMetaData:{
         sendUserAgentHeader: true,
+        useSessionStorage: true,
         enableHeartBeatTimer: true,
         heartBeatTimer: 30,
         eventCategoryName: "LogEvent",
