@@ -1065,8 +1065,8 @@ var optimoveSDK = function(){
             return _configuration.version;
         },
         reportEvent : function(eventName, parameters){
+            parameters.userId = _userId || null;
             var validEvent = validateEvent(eventName, parameters);
-            validEvent.userId = _userId;
             if(validEvent){
                 if(_configuration.enableOptitrack){
                     logger.log("info","in reportEvent Optitrack");
