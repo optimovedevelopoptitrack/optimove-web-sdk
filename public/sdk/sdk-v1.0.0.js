@@ -1065,6 +1065,7 @@ var optimoveSDK = function(){
             return _configuration.version;
         },
         reportEvent : function(eventName, parameters){
+            parameters.userId = _userId;
             var validEvent = validateEvent(eventName, parameters);
             validEvent.userId = _userId;
             if(validEvent){
