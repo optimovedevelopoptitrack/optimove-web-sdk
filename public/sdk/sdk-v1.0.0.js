@@ -1086,7 +1086,9 @@ var optimoveSDK = function(){
             if(_configuration.enableRealtime){
                 logger.log("info","call setPageVisit Realtime");
                 var event = validateEvent("PageVisit", {customURL: customURL, pageTitle : pageTitle, category : category});
-                realTimeModule.reportEvent(event);
+                if(event){
+                    realTimeModule.reportEvent(event);
+                }
             }
 
             if(_configuration.supportCookieMatcher == true)
