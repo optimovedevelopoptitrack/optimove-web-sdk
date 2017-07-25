@@ -163,7 +163,7 @@ var optimoveSDK = function(){
                 _configuration.realtimeMetaData.realtimeGateway + event :
                 _configuration.realtimeMetaData.realtimeGateway + '/' + event;
             xmlhttp.open("POST", url, true);
-            xmlhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+            xmlhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded ; charset=utf-8");
             xmlhttp.onreadystatechange = function() {
                 if (this.readyState == 4 && this.status == 200) {
                     var responseData = JSON.parse(this.responseText);
@@ -1036,8 +1036,8 @@ var optimoveSDK = function(){
         },
         reportEvent : function(eventName, parameters){
             var validEvent = validateEvent(eventName, parameters);
-            validEvent.userId = _userId;
             if(validEvent){
+                validEvent.userId = _userId;
                 if(_configuration.enableOptitrack){
                     logger.log("info","in reportEvent Optitrack");
                     optitrackModule.logEvent(eventName, parameters);
