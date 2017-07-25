@@ -239,7 +239,7 @@ var optimoveTenantConfiguration = {
 
             id: 1105,
             supportedOnOptitrack: true,
-            supportedOnRealTime: false,
+            supportedOnRealTime: true,
             parameters: {
                 tenant_id: {
                     optional: false,
@@ -268,7 +268,7 @@ var optimoveTenantConfiguration = {
 
             id: 1106,
             supportedOnOptitrack: true,
-            supportedOnRealTime: false,
+            supportedOnRealTime: true,
             parameters: {
                 tenant_id: {
                     optional: false,
@@ -290,7 +290,7 @@ var optimoveTenantConfiguration = {
 
             id: 1107,
             supportedOnOptitrack: true,
-            supportedOnRealTime: false,
+            supportedOnRealTime: true,
             parameters: {
                 tenant_id: {
                     optional: false,
@@ -312,7 +312,7 @@ var optimoveTenantConfiguration = {
 
             id: 1108,
             supportedOnOptitrack: true,
-            supportedOnRealTime: false,
+            supportedOnRealTime: true,
             parameters: {
                 tenant_id: {
                     optional: false,
@@ -334,7 +334,7 @@ var optimoveTenantConfiguration = {
 
             id: 1109,
             supportedOnOptitrack: true,
-            supportedOnRealTime: false,
+            supportedOnRealTime: true,
             parameters: {
                 tenant_id: {
                     optional: false,
@@ -356,7 +356,7 @@ var optimoveTenantConfiguration = {
 
             id: 1110,
             supportedOnOptitrack: true,
-            supportedOnRealTime: false,
+            supportedOnRealTime: true,
             parameters: {
                 tenant_id: {
                     optional: false,
@@ -377,9 +377,344 @@ var optimoveTenantConfiguration = {
                     name: "section",
                     id: 3,
                     type: "String",
+                    optiTrackDimensionId: 10
+                }
+            }
+        },
+		INCREASE_MEASUREMENT_CHANGED: {
+
+            id: 1111,
+            supportedOnOptitrack: true,
+            supportedOnRealTime: true,
+            parameters: {
+                tenant_id: {
+                    optional: false,
+                    name: "tenant_id",
+                    id: 1,
+                    type: "Number",
+                    optiTrackDimensionId: 8
+                },
+                page_name: {
+                    optional: false,
+                    name: "page_name",
+                    id: 2,
+                    type: "String",
+                    optiTrackDimensionId: 9
+                },
+                measurement_type: {
+                    optional: false,
+                    name: "measurement_type",
+                    id: 3,
+                    type: "String",
+                    optiTrackDimensionId: 10
+                }
+            }
+        },
+		CLICKED_LINK: {
+
+            id: 1112,
+            supportedOnOptitrack: true,
+            supportedOnRealTime: true,
+            parameters: {
+                tenant_id: {
+                    optional: false,
+                    name: "tenant_id",
+                    id: 1,
+                    type: "Number",
+                    optiTrackDimensionId: 8
+                },
+                page_name: {
+                    optional: false,
+                    name: "page_name",
+                    id: 2,
+                    type: "String",
+                    optiTrackDimensionId: 9
+                },
+                link_to: {
+                    optional: false,
+                    name: "link_to",
+                    id: 3,
+                    type: "String",
+                    optiTrackDimensionId: 10
+                },
+				measurement_type: {
+                    optional: true,
+                    name: "measurement_type",
+                    id: 3,
+                    type: "String",
+                    optiTrackDimensionId: 11
+                },
+				card_type: {
+                    optional: true,
+                    name: "card_type",
+                    id: 3,
+                    type: "String",
+                    optiTrackDimensionId: 12
+                }
+            }
+        },
+		SWITCH_TO_ACTIVITY_VIEW: {
+
+            id: 1113,
+            supportedOnOptitrack: true,
+            supportedOnRealTime: true,
+            parameters: {
+                tenant_id: {
+                    optional: false,
+                    name: "tenant_id",
+                    id: 1,
+                    type: "Number",
+                    optiTrackDimensionId: 8
+                },
+                page_name: {
+                    optional: false,
+                    name: "page_name",
+                    id: 2,
+                    type: "String",
                     optiTrackDimensionId: 9
                 }
             }
         },
+		DATE_RANGE_CHANGED: {
+
+            id: 1114,
+            supportedOnOptitrack: true,
+            supportedOnRealTime: true,
+            parameters: {
+                tenant_id: {
+                    optional: false,
+                    name: "tenant_id",
+                    id: 1,
+                    type: "Number",
+                    optiTrackDimensionId: 8
+                },
+                page_name: {
+                    optional: false,
+                    name: "page_name",
+                    id: 2,
+                    type: "String",
+                    optiTrackDimensionId: 9
+                }
+            }
+        },
+		ACTIVITY_MEASUREMENT_CHANGED: {
+
+            id: 1115,
+            supportedOnOptitrack: true,
+            supportedOnRealTime: true,
+            parameters: {
+                tenant_id: {
+                    optional: false,
+                    name: "tenant_id",
+                    id: 1,
+                    type: "Number",
+                    optiTrackDimensionId: 8
+                },
+                page_name: {
+                    optional: false,
+                    name: "page_name",
+                    id: 2,
+                    type: "String",
+                    optiTrackDimensionId: 9
+                }
+            }
+        },
+		ADD_NEW_CAMPAIGN: {
+
+            id: 1116,
+            supportedOnOptitrack: true,
+            supportedOnRealTime: true,
+            parameters: {
+                tenant_id: {
+                    optional: false,
+                    name: "tenant_id",
+                    id: 1,
+                    type: "Number",
+                    optiTrackDimensionId: 8
+                },
+                page_name: {
+                    optional: false,
+                    name: "page_name",
+                    id: 2,
+                    type: "String",
+                    optiTrackDimensionId: 9
+                }
+            }
+        },
+		ARCHIVED_CARD: {
+
+            id: 1117,
+            supportedOnOptitrack: true,
+            supportedOnRealTime: true,
+            parameters: {
+                tenant_id: {
+                    optional: false,
+                    name: "tenant_id",
+                    id: 1,
+                    type: "Number",
+                    optiTrackDimensionId: 8
+                },
+                page_name: {
+                    optional: false,
+                    name: "page_name",
+                    id: 2,
+                    type: "String",
+                    optiTrackDimensionId: 9
+                },
+				card_type: {
+                    optional: false,
+                    name: "card_type",
+                    id: 3,
+                    type: "String",
+                    optiTrackDimensionId: 10
+                }
+            }
+        },
+		CHANGED_DOMAIN: {
+
+            id: 1118,
+            supportedOnOptitrack: true,
+            supportedOnRealTime: true,
+            parameters: {
+                tenant_id: {
+                    optional: false,
+                    name: "tenant_id",
+                    id: 1,
+                    type: "Number",
+                    optiTrackDimensionId: 8
+                },
+                page_name: {
+                    optional: false,
+                    name: "page_name",
+                    id: 2,
+                    type: "String",
+                    optiTrackDimensionId: 9
+                }
+            }
+        },
+		CHANGED_SORT_BY: {
+
+            id: 1119,
+            supportedOnOptitrack: true,
+            supportedOnRealTime: true,
+            parameters: {
+                tenant_id: {
+                    optional: false,
+                    name: "tenant_id",
+                    id: 1,
+                    type: "Number",
+                    optiTrackDimensionId: 8
+                },
+                page_name: {
+                    optional: false,
+                    name: "page_name",
+                    id: 2,
+                    type: "String",
+                    optiTrackDimensionId: 9
+                }
+            }
+        },
+		CLICKED_CAMPAIGN_JOURNEY: {
+
+            id: 1120,
+            supportedOnOptitrack: true,
+            supportedOnRealTime: true,
+            parameters: {
+                tenant_id: {
+                    optional: false,
+                    name: "tenant_id",
+                    id: 1,
+                    type: "Number",
+                    optiTrackDimensionId: 8
+                },
+                page_name: {
+                    optional: false,
+                    name: "page_name",
+                    id: 2,
+                    type: "String",
+                    optiTrackDimensionId: 9
+                }
+            }
+        },
+		CLICKED_ON_ACTION: {
+
+            id: 1121,
+            supportedOnOptitrack: true,
+            supportedOnRealTime: true,
+            parameters: {
+                tenant_id: {
+                    optional: false,
+                    name: "tenant_id",
+                    id: 1,
+                    type: "Number",
+                    optiTrackDimensionId: 8
+                },
+                page_name: {
+                    optional: false,
+                    name: "page_name",
+                    id: 2,
+                    type: "String",
+                    optiTrackDimensionId: 9
+                },
+				card_type: {
+                    optional: false,
+                    name: "card_type",
+                    id: 3,
+                    type: "String",
+                    optiTrackDimensionId: 10
+                }
+            }
+        },
+		COMPARE_GROUPS: {
+
+            id: 1122,
+            supportedOnOptitrack: true,
+            supportedOnRealTime: true,
+            parameters: {
+                tenant_id: {
+                    optional: false,
+                    name: "tenant_id",
+                    id: 1,
+                    type: "Number",
+                    optiTrackDimensionId: 8
+                },
+                page_name: {
+                    optional: false,
+                    name: "page_name",
+                    id: 2,
+                    type: "String",
+                    optiTrackDimensionId: 9
+                },
+				card_type: {
+                    optional: false,
+                    name: "card_type",
+                    id: 3,
+                    type: "String",
+                    optiTrackDimensionId: 10
+                }
+            }
+        },
+		COMPARE_MIGRATION: {
+
+            id: 1123,
+            supportedOnOptitrack: true,
+            supportedOnRealTime: true,
+            parameters: {
+                tenant_id: {
+                    optional: false,
+                    name: "tenant_id",
+                    id: 1,
+                    type: "Number",
+                    optiTrackDimensionId: 8
+                },
+                page_name: {
+                    optional: false,
+                    name: "page_name",
+                    id: 2,
+                    type: "String",
+                    optiTrackDimensionId: 9
+                }
+            }
+        }
     }
 }
