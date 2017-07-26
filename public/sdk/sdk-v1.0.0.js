@@ -109,6 +109,9 @@ var optimoveSDK = function(){
                     }else if(paramMetadata.type == "Number" && typeof(parameters[parameterName]) != "number" ){
                         logger.log("info", "parameter '"+ parameterName +"' should be type of number")
                         return false
+                    }else if(paramMetadata.type == "Boolean" && typeof(parameters[parameterName]) != "boolean" ){
+                        logger.log("info", "parameter '"+ parameterName +"' should be type of boolean")
+                        return false
                     }
                 }
 
@@ -163,9 +166,9 @@ var optimoveSDK = function(){
                 _configuration.realtimeMetaData.realtimeGateway + event :
                 _configuration.realtimeMetaData.realtimeGateway + '/' + event;
             xmlhttp.open("POST", url, true);
-            xmlhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded ; charset=utf-8");
+            xmlhttp.setRequestHeader("Content-Type", "application/x-www-form-urlencoded;charset=utf-8");
             xmlhttp.onreadystatechange = function() {
-                if (this.readyState == 4 && this.status == 200) {
+                if (xmlhttp.readyState == XMLHttpRequest.DONE && xmlhttp.status == 200) {
                     var responseData = JSON.parse(this.responseText);
                     if (_configuration.realtimeMetaData.options.popupCallBack) {
                         _configuration.realtimeMetaData.options.popupCallBack(response);
@@ -312,6 +315,12 @@ var optimoveSDK = function(){
                     if(event_parameters[paramName] != undefined && currParamConfig.optiTrackDimensionId > 0  )
                     {
                         var paramValue = event_parameters[paramName];
+                        if(currParamConfig.type == "Boolean"){
+                           if(paramValue == true) 
+                            paramValue = 1;
+                           else  
+                            paramValue = 0;
+                        }
                         if( paramValue != undefined)
                         {
                             numOfAddedParams++;
@@ -1086,9 +1095,7 @@ var optimoveSDK = function(){
             if(_configuration.enableRealtime){
                 logger.log("info","call setPageVisit Realtime");
                 var event = validateEvent("PageVisit", {customURL: customURL, pageTitle : pageTitle, category : category});
-                if(event){
-                    realTimeModule.reportEvent(event);
-                }
+                realTimeModule.reportEvent(event);
             }
 
             if(_configuration.supportCookieMatcher == true)
