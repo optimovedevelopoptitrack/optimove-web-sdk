@@ -109,6 +109,9 @@ var optimoveSDK = function(){
                     }else if(paramMetadata.type == "Number" && typeof(parameters[parameterName]) != "number" ){
                         logger.log("info", "parameter '"+ parameterName +"' should be type of number")
                         return false
+                    }else if(paramMetadata.type == "Boolean" && typeof(parameters[parameterName]) != "boolean" ){
+                        logger.log("info", "parameter '"+ parameterName +"' should be type of boolean")
+                        return false
                     }
                 }
 
@@ -312,6 +315,12 @@ var optimoveSDK = function(){
                     if(event_parameters[paramName] != undefined && currParamConfig.optiTrackDimensionId > 0  )
                     {
                         var paramValue = event_parameters[paramName];
+                        if(currParamConfig.type == "Boolean"){
+                           if(paramValue == true) 
+                            paramValue = 1;
+                           else  
+                            paramValue = 0;
+                        }
                         if( paramValue != undefined)
                         {
                             numOfAddedParams++;
