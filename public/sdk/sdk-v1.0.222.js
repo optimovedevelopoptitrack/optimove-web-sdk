@@ -117,6 +117,7 @@ var optimoveSDK = function(){
             if(typeof currParamValue == "string")
                 {
                     var normalizedValue = currParamValue.trim();
+                    normalizedValue = normalizedValue.toLowerCase();
                     event_parameters[paramName] = normalizedValue; 
                 }          
         })
