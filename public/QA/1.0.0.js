@@ -147,6 +147,15 @@ var optimoveTenantConfiguration = {
                     optiTrackDimensionId: 8
                 }
             }
+        },
+        login_event: {
+            id: 1102,
+            supportedOnOptitrack: true,
+            supportedOnRealTime: true,
+            parameters: {
+                
+                }
+            }
         }
                     
     }
