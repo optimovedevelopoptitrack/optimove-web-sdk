@@ -4,7 +4,7 @@ var optimoveSDK = function(){
     var _version = "1.0.1";
     var _sdkDomain = "http://sdk-cdn.optimove.net/";
     var _configuration;
-    var _userId;
+    var _userId = null;
     var _userEmail;
 
     var logger = function(){
@@ -438,7 +438,6 @@ var optimoveSDK = function(){
                 }
 
                 _tracker.setCustomUrl(pageURL);
-                _tracker.setSessionCookieTimeout(10);
 
                 if(typeof pageTitle != 'undefined' && pageTitle != null)
                 {
