@@ -463,6 +463,8 @@ var optimoveSDK = function(){
                     throw 'customURL-' + pageURL  + 'is not a valid URL';
                 }              
 
+                _tracker.enableLinkTracking( true );
+                
                 if(_sdkConfig.optitrackMetaData.enableHeartBeatTimer == true )
                 {
                     _tracker.enableHeartBeatTimer(_sdkConfig.optitrackMetaData.heartBeatTimer);
