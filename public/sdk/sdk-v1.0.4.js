@@ -1,7 +1,7 @@
 'use strict'
 
 var optimoveSDK = function(){
-    var _version = "1.0.1";
+    var _version = "1.0.4";
     var _sdkDomain = "http://sdk-cdn.optimove.net/";
     var _configuration;
     var _userId = null;
