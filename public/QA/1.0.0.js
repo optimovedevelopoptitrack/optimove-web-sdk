@@ -154,9 +154,8 @@ var optimoveTenantConfiguration = {
             supportedOnRealTime: true,
             parameters: {
                 
-                }
             }
         }
-                    
     }
+                    
 }
