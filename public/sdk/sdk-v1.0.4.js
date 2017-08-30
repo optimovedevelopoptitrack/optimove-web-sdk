@@ -464,11 +464,10 @@ var optimoveSDK = function(){
                 }              
 
                 _tracker.enableLinkTracking( true );
-                
-                if(_sdkConfig.optitrackMetaData.enableHeartBeatTimer == true )
-                {
-                    _tracker.enableHeartBeatTimer(_sdkConfig.optitrackMetaData.heartBeatTimer);
-                }
+                // if(_sdkConfig.optitrackMetaData.enableHeartBeatTimer == true )
+                // {
+                //     _tracker.enableHeartBeatTimer(_sdkConfig.optitrackMetaData.heartBeatTimer);
+                // }
 
                 _tracker.setCustomUrl(pageURL);
 
