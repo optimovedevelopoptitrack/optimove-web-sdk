@@ -1,7 +1,7 @@
 var optimoveTenantConfiguration = {
     version: "1.0.0",
     realtimeMetaData:{
-        realtimeToken: "dfasdf4fwf234rfwef2rf2w3efd234df2freff23dff3",
+        realtimeToken: "befcd11e4f38b2cf01322999c16bb44d442f9f1aab72d6483f3df15ba62cefa4",
         realtimeGateway: "https://102.22.33.44/",   
         options: {
         showDimmer: true,
@@ -12,7 +12,7 @@ var optimoveTenantConfiguration = {
     optitrackMetaData:{
         sendUserAgentHeader: true,
         useSessionStorage: true,
-        enableHeartBeatTimer: true,
+        enableHeartBeatTimer: false,
         heartBeatTimer: 30,
         eventCategoryName: "LogEvent",
         eventIdCustomDimensionId: 6,
@@ -25,14 +25,15 @@ var optimoveTenantConfiguration = {
         siteId: 802,
     },
     cookieMatcherMetaData:{  
-        optimoveCookieMatcherId: undefined,
+        optimoveCookieMatcherId: 'optimove_dmp',
+        tenantToken: '0b8b59f5-46c6-4311-8113-75d397659f9c'
     },
 
     isSPA: false,
     enableOptitrack: true,
     enableVisitors: true,
     enableRealtime: true,   
-    supportCookieMatcher: false,       
+    supportCookieMatcher: true,       
     supportUserEmailStitch: true,     
  
     events: {
