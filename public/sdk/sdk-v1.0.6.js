@@ -124,6 +124,7 @@ var optimoveSDK = function(){
                 }          
         })
     }
+    
 
     var getVisitorsInfoObj = function(){
 
@@ -717,7 +718,7 @@ var optimoveSDK = function(){
                             _userId = updatedUserId;
                             var updatedVisitorId = _tracker.getVisitorId();
                             logSetUserIdEvent(THIS, origVisitorId, updatedUserId, updatedVisitorId);
-                            
+
                             var rtEvent = validateEvent("set_user_id_event", {originalVisitorId: origVisitorId, updatedVisitorId:updatedVisitorId, userId: updatedUserId});
                             reportEventRealtime(rtEvent);
                         }
