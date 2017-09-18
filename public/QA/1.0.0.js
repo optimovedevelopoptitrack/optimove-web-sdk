@@ -30,8 +30,8 @@ var optimoveTenantConfiguration = {
     },
 
     isSPA: false,
-    enableOptitrack: true,
-    enableVisitors: true,
+    enableOptitrack: false,
+    enableVisitors: false,
     enableRealtime: true,   
     supportCookieMatcher: true,       
     supportUserEmailStitch: true,     
@@ -174,7 +174,7 @@ var optimoveTenantConfiguration = {
                     name: "win_amount",
                     id: 1,
                     type: "Number",
-                    optiTrackDimensionId: 8
+                    optiTrackDimensionId: 9
                 }
             }
 			
@@ -196,7 +196,7 @@ var optimoveTenantConfiguration = {
                     name: "loss_amount",
                     id: 1,
                     type: "Number",
-                    optiTrackDimensionId: 8
+                    optiTrackDimensionId: 9
                 }
             }
 			
