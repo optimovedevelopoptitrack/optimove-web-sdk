@@ -21,8 +21,8 @@ var optimoveTenantConfiguration = {
         maxVisitCustomDimensions: 5,
         actionCustomDimensionsStartId: 8,
         maxActionCustomDimensions: 25,
-        optitrackEndpoint: "http://brayolatracksdk.optimove.net",
-        siteId: 390,
+        optitrackEndpoint: "http://californiapsychicstracksdk.optimove.net",
+        siteId: 250,
     },
     cookieMatcherMetaData:{  
         optimoveCookieMatcherId: 'optimove_dmp',
