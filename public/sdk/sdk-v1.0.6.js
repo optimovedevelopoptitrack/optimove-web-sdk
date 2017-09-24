@@ -169,12 +169,9 @@ var optimoveSDK = function(){
     var reportEventRealtime = function(validEvent){
        logger.log("info","in reportEvent Real time");
        if(_configuration.enableOptitrack && _configuration.enableVisitors){
-            validEvent.visitorData = getVisitorsInfoObj();
-        }else if(!_userId){
-            logger.log("info", "parameter userId is required, please call setUserId method")
-            return false;
+            validEvent.visitorData = optitrackModule.getOptitrackVisitorInfo();
         }
-        
+
         realTimeModule.reportEvent(validEvent);        
     }
 
@@ -268,8 +265,9 @@ var optimoveSDK = function(){
                     tid : _configuration.realtimeMetaData.realtimeToken,
                     cid : _userId,
                     eid : event.eventMetadata.id,
-                    visitorId : event.visitorData ? event.visitorData.visitorId : null,
-                    visitCount : event.visitorData ? event.visitorData.visitCount : null,
+                    visitorId : event.visitorData ? event.visitorData[1] : null,
+                    newVisitor : event.visitorData ? event.visitorData[0] : null,
+                    firstVisitorDate : event.visitorData ?  event.visitorData[2] : null ,
                     context : JSON.stringify(params)
                 },
                 function (response) {
@@ -286,7 +284,7 @@ var optimoveSDK = function(){
 
     var optitrackModule = function(){
         var _userId 		    = null;
-        var _origVisitorId      = null;
+        var _originalVisitorId  = null;
         var _updatedVisitorId   = null;
         var _ot_endpoint 	    = null;
         var _ot_tenantId 	    = null;
@@ -708,7 +706,7 @@ var optimoveSDK = function(){
                         var existUserId = _tracker.getUserId();
                         if(existUserId != updatedUserId)
                         {
-                            _origVisitorId = _tracker.getVisitorId();
+                            _originalVisitorId = _tracker.getVisitorId();
                             _tracker.setUserId(updatedUserId);
                             _userId = updatedUserId;
                             _updatedVisitorId = _tracker.getVisitorId();
@@ -735,7 +733,7 @@ var optimoveSDK = function(){
             try {
                var userInfo = {
                  userId: _userId,
-                 origVisitorId: _origVisitorId,
+                 originalVisitorId: _originalVisitorId,
                  updatedVisitorId: _updatedVisitorId
             };
             return userInfo;
@@ -1133,6 +1131,7 @@ var optimoveSDK = function(){
             logUserEmail: logUserEmail,
             logEvent : logEvent,
             getOptitrackVisitorInfo: getOptitrackVisitorInfo,
+            getOptitrackUserInfo : getOptitrackUserInfo,
             getUserId: getPersistedUserId
 
         };
@@ -1216,6 +1215,11 @@ var optimoveSDK = function(){
             if(_configuration.enableOptitrack){
                 logger.log("info","call setUserId Optitrack");
                 optitrackModule.setUserId(_userId);
+                if(_configuration.enableRealtime){
+                    var userInfo = optitrackModule.getOptitrackUserInfo();
+                    var rtEvent = validateEvent("set_user_id_event", userInfo);
+                    reportEventRealtime(rtEvent);
+                }
             }
 
             if(_configuration.supportCookieMatcher == true)
