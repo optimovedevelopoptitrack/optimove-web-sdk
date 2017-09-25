@@ -170,7 +170,10 @@ var optimoveSDK = function(){
        logger.log("info","in reportEvent Real time");
        if(_configuration.enableOptitrack && _configuration.enableVisitors){
             validEvent.visitorData = optitrackModule.getOptitrackVisitorInfo();
-        }
+       }else if(!_userId && !_configuration.enableVisitors){
+            logger.log("info","No user id please call the setUserId method");
+            return false;
+       }
 
         realTimeModule.reportEvent(validEvent);        
     }
@@ -710,7 +713,7 @@ var optimoveSDK = function(){
                             _tracker.setUserId(updatedUserId);
                             _userId = updatedUserId;
                             _updatedVisitorId = _tracker.getVisitorId();
-                            logSetUserIdEvent(THIS, origVisitorId, updatedUserId, updatedVisitorId);
+                            logSetUserIdEvent(THIS, _originalVisitorId, updatedUserId, _updatedVisitorId);
                         }
                     }
                 }
@@ -1261,8 +1264,12 @@ var optimoveSDK = function(){
 
             if(_configuration.enableRealtime){
                 logger.log("info","call setPageVisit Realtime");
-                var event = validateEvent("PageVisit", {customURL: customURL, pageTitle : pageTitle, category : category});
-                reportEventRealtime(event);
+                var event = validateEvent("set_page_visit", {customURL: customURL, pageTitle : pageTitle, category : category});
+                if(event){
+                    reportEventRealtime(event);
+                }else{
+                    logger.log("info","set_page_visit validation failed");
+                }
             }
 
             

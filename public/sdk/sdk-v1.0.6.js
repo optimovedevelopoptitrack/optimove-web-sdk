@@ -713,7 +713,7 @@ var optimoveSDK = function(){
                             _tracker.setUserId(updatedUserId);
                             _userId = updatedUserId;
                             _updatedVisitorId = _tracker.getVisitorId();
-                            logSetUserIdEvent(THIS, origVisitorId, updatedUserId, updatedVisitorId);
+                            logSetUserIdEvent(THIS, _originalVisitorId, updatedUserId, _updatedVisitorId);
                         }
                     }
                 }
