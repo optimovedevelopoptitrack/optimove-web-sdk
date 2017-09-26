@@ -269,7 +269,7 @@ var optimoveSDK = function(){
                     cid : _userId,
                     eid : event.eventMetadata.id,
                     visitorId : event.visitorData ? event.visitorData[1] : null,
-                    newVisitor : event.visitorData ? event.visitorData[0] : null,
+                    visitCount : event.visitorData ? event.visitorData[3] : null,
                     firstVisitorDate : event.visitorData ?  event.visitorData[2] : null ,
                     context : JSON.stringify(params)
                 },
