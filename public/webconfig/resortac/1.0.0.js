@@ -2,7 +2,7 @@ var optimoveTenantConfiguration = {
     version: "1.0.0",
     realtimeMetaData:{
         realtimeToken: "",
-        realtimeGateway: "https://gateway.optimove.events/",   
+        realtimeGateway: "https://gateway-eu.optimove.events/",   
         options: {
         showDimmer: true,
         showWatermark: true,
@@ -21,8 +21,8 @@ var optimoveTenantConfiguration = {
         maxVisitCustomDimensions: 5,
         actionCustomDimensionsStartId: 8,
         maxActionCustomDimensions: 25,
-        optitrackEndpoint: "http://spacebartracksdk.optimove.net",
-        siteId: 72,
+        optitrackEndpoint: "http://resortactracksdk.optimove.net",
+        siteId: 341,
     },
     cookieMatcherMetaData:{  
         optimoveCookieMatcherId: 'optimove_dmp',
@@ -32,7 +32,7 @@ var optimoveTenantConfiguration = {
     isSPA: false,
     enableOptitrack: true,
     enableVisitors: true,
-    enableRealtime: false,   
+    enableRealtime: true,   
     supportCookieMatcher: true,       
     supportUserEmailStitch: true,     
  

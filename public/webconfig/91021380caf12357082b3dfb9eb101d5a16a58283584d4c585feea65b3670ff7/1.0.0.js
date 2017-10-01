@@ -1,8 +1,8 @@
 var optimoveTenantConfiguration = {
     version: "1.0.0",
     realtimeMetaData:{
-        realtimeToken: "befcd11e4f38b2cf01322999c16bb44d442f9f1aab72d6483f3df15ba62cefa4",
-        realtimeGateway: "https://gateway-eu.optimove.events/",   
+        realtimeToken: "",
+        realtimeGateway: "https://gateway.optimove.events/",   
         options: {
         showDimmer: true,
         showWatermark: true,
