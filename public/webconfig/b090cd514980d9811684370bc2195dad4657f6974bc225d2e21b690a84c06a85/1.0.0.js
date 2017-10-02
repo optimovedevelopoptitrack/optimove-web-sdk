@@ -21,7 +21,7 @@ var optimoveTenantConfiguration = {
         maxVisitCustomDimensions: 5,
         actionCustomDimensionsStartId: 8,
         maxActionCustomDimensions: 25,
-        optitrackEndpoint: "http://minicliptracksdk.optimove.net",
+        optitrackEndpoint: "http://minicliptracksdk.optimove.net/",
         siteId: 392,
     },
     cookieMatcherMetaData:{  

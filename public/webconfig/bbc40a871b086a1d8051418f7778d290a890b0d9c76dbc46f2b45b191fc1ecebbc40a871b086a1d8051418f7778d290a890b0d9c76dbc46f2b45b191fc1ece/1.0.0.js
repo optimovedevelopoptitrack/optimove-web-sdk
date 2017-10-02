@@ -21,7 +21,7 @@ var optimoveTenantConfiguration = {
         maxVisitCustomDimensions: 5,
         actionCustomDimensionsStartId: 8,
         maxActionCustomDimensions: 25,
-        optitrackEndpoint: "http://luckyvitamintracksdk.optimove.net",
+        optitrackEndpoint: "http://luckyvitamintracksdk.optimove.net/",
         siteId: 161,
     },
     cookieMatcherMetaData:{  

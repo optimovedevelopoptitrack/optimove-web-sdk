@@ -21,7 +21,7 @@ var optimoveTenantConfiguration = {
         maxVisitCustomDimensions: 5,
         actionCustomDimensionsStartId: 8,
         maxActionCustomDimensions: 25,
-        optitrackEndpoint: "http://brayolatracksdk.optimove.net",
+        optitrackEndpoint: "http://brayolatracksdk.optimove.net/",
         siteId: 390,
     },
     cookieMatcherMetaData:{  

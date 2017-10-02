@@ -21,7 +21,7 @@ var optimoveTenantConfiguration = {
         maxVisitCustomDimensions: 5,
         actionCustomDimensionsStartId: 8,
         maxActionCustomDimensions: 25,
-        optitrackEndpoint: "http://gaiatracksdk.optimove.net",
+        optitrackEndpoint: "http://gaiatracksdk.optimove.net/",
         siteId: 333,
     },
     cookieMatcherMetaData:{  

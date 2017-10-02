@@ -21,7 +21,7 @@ var optimoveTenantConfiguration = {
         maxVisitCustomDimensions: 5,
         actionCustomDimensionsStartId: 8,
         maxActionCustomDimensions: 25,
-        optitrackEndpoint: "http://resortactracksdk.optimove.net",
+        optitrackEndpoint: "http://resortactracksdk.optimove.net/",
         siteId: 341,
     },
     cookieMatcherMetaData:{  

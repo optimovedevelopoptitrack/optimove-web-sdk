@@ -21,7 +21,7 @@ var optimoveTenantConfiguration = {
         maxVisitCustomDimensions: 5,
         actionCustomDimensionsStartId: 8,
         maxActionCustomDimensions: 25,
-        optitrackEndpoint: "http://goldennuggettracksdk.optimove.net",
+        optitrackEndpoint: "http://goldennuggettracksdk.optimove.net/",
         siteId: 243,
     },
     cookieMatcherMetaData:{  
