@@ -1,7 +1,7 @@
 var optimoveTenantConfiguration = {
     version: "1.0.0",
     realtimeMetaData:{
-        realtimeToken: "",
+        realtimeToken: "38a442a1ab134189de79fcb3b63b5ae07fdace6a79e1c16206d75b5227f15f6a",
         realtimeGateway: "https://gateway-eu.optimove.events/",   
         options: {
         showDimmer: true,
@@ -32,7 +32,7 @@ var optimoveTenantConfiguration = {
     isSPA: false,
     enableOptitrack: true,
     enableVisitors: true,
-    enableRealtime: false,   
+    enableRealtime: true,   
     supportCookieMatcher: true,       
     supportUserEmailStitch: true,     
  
