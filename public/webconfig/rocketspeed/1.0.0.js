@@ -21,8 +21,8 @@ var optimoveTenantConfiguration = {
         maxVisitCustomDimensions: 5,
         actionCustomDimensionsStartId: 8,
         maxActionCustomDimensions: 25,
-        optitrackEndpoint: "http://goldennaggettracksdk.optimove.net",
-        siteId: 243,
+        optitrackEndpoint: "http://rocketspeedtracksdk.optimove.net",
+        siteId: 400,
     },
     cookieMatcherMetaData:{  
         optimoveCookieMatcherId: 'optimove_dmp',
@@ -32,7 +32,7 @@ var optimoveTenantConfiguration = {
     isSPA: false,
     enableOptitrack: true,
     enableVisitors: true,
-    enableRealtime: true,   
+    enableRealtime: false,   
     supportCookieMatcher: true,       
     supportUserEmailStitch: true,     
  

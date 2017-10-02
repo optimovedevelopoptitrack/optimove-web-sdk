@@ -32,7 +32,7 @@ var optimoveTenantConfiguration = {
     isSPA: false,
     enableOptitrack: true,
     enableVisitors: true,
-    enableRealtime: false,   
+    enableRealtime: true,   
     supportCookieMatcher: true,       
     supportUserEmailStitch: true,     
  
