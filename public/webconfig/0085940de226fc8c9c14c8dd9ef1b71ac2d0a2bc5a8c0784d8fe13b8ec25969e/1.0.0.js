@@ -33,8 +33,8 @@ var optimoveTenantConfiguration = {
     enableOptitrack: true,
     enableVisitors: true,
     enableRealtime: true,   
-    supportCookieMatcher: true,       
-    supportUserEmailStitch: true,     
+    supportCookieMatcher: false,       
+    supportUserEmailStitch: false,     
  
     events: {
         set_user_id_event: {
