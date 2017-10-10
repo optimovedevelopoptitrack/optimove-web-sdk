@@ -125,6 +125,31 @@ var optimoveSDK = function(){
         })
     }
 
+    var decideBrowserType = function(){
+        // Chrome 1+
+      _isChrome = !!window.chrome && !!window.chrome.webstore;
+      if(_isChrome == false){
+          _isIE = /*@cc_on!@*/false || !!document.documentMode;
+          if(_isIE == false){ // Safari 3.0+ "[object HTMLElementConstructor]" 
+              // Internet Explorer 6-11
+              _isFirefox = typeof InstallTrigger !== 'undefined';
+              if(_isFirefox == false){ // Firefox 1.0+
+                  _isEdge = !isIE && !!window.StyleMedia;
+                  if(_isEdge == false){  // Edge 20+
+                  // Internet Explorer 6-11
+                      _isSafari = /constructor/i.test(window.HTMLElement) || (function (p) { return p.toString() === "[object SafariRemoteNotification]"; })(!window['safari'] || (typeof safari !== 'undefined' && safari.pushNotification));
+                      if(_isSafari == false){ // Safari 3.0+ "[object HTMLElementConstructor]" 
+                          // Internet Explorer 6-11
+                          // Blink engine detection
+                          _isBlink = (_isChrome || _isOpera) && !!window.CSS;
+                       }
+                   }
+               }
+           }
+       }
+   }
+
+
     var getVisitorsInfoObj = function(){
 
         var visitorsInfo = optitrackModule.getOptitrackVisitorInfo();
@@ -269,7 +294,7 @@ var optimoveSDK = function(){
                     cid : _userId,
                     eid : event.eventMetadata.id,
                     visitorId : event.visitorData ? event.visitorData[1] : null,
-                    newVisitor : event.visitorData ? event.visitorData[0] : null,
+                    visitCount : event.visitorData ? event.visitorData[3] : null,
                     firstVisitorDate : event.visitorData ?  event.visitorData[2] : null ,
                     context : JSON.stringify(params)
                 },
@@ -1043,7 +1068,18 @@ var optimoveSDK = function(){
                 g.async = true;
                 g.defer = true;
                 g.src = resourceURL;
-                g.onload= function(){ handleTrackerLoadedCB(THIS,callback) } ;
+                if (g.readyState){  //IE
+                    g.onreadystatechange = function(){
+                        if (g.readyState == "loaded" ||
+                            g.readyState == "complete"){
+                            g.onreadystatechange = null;
+                            handleTrackerLoadedCB(THIS,callback);
+                        }
+                    };
+                }else{
+                    g.onload= function(){ handleTrackerLoadedCB(THIS,callback) } ;
+                }
+               
                 s.parentNode.insertBefore(g, s);
             }
         };
